@@ -1,0 +1,14 @@
+{
+  "category.event_helper": "Event Helper",
+  "key.event_helper.hide_players": "Hide Players",
+
+  "event_helper.message.players_hidden": "Players: Hidden",
+  "event_helper.message.players_shown": "Players: Visible",
+
+  "event_helper.options.title": "Event Helper Config",
+  "event_helper.options.edit_whitelist": "Edit Whitelist",
+  "event_helper.options.visibility_transition_time":  "Visibility Transition Time",
+  "event_helper.options.add_player": "Add Player",
+  "event_helper.options.create_group": "Create Group",
+  "event_helper.options.remove_group": "Remove Group"
+}

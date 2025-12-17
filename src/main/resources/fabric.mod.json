@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "event_helper",
+	"version": "${version}",
+	"name": "Event Helper",
+	"description": "Hide player mod",
+	"authors": [
+		"JakeDot"
+	],
+	"license": "CC0-1.0",
+	"icon": "assets/event_helper/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"ca.jakedot.eventhelper.EventHelper"
+		],
+		"modmenu": [
+			"ca.jakedot.eventhelper.config.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"event_helper.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.1",
+		"minecraft": "~1.21.4",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

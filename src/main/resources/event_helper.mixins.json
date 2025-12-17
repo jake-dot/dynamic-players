@@ -1,0 +1,22 @@
+{
+	"required": true,
+	"package": "ca.jakedot.eventhelper.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"BufferBuilderMixin",
+		"EquipmentLayerRendererMixin",
+		"CompositeRenderTypeAccessor",
+		"RenderStateShardAccessor",
+		"CompositeStateMixin",
+		"EntityRenderDispatcherMixin",
+		"EntityRendererMixin",
+		"BufferSourceMixin",
+		"LevelRendererMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
