@@ -6,6 +6,7 @@ import ca.jakedot.eventhelper.mixin.RenderStateShardAccessor;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.util.ARGB;
 
 import java.util.function.Supplier;
 
@@ -39,7 +40,21 @@ public class RenderUtils {
         return VisibilityManager.isVisible(getCurrentRenderName());
     }
 
-    public static float getOpacity() {
+    public static int recalculateArgb(int old) {
+        if (shouldRenderTranslucent() && RenderUtils.renderOverride.overridesTransparency()) {
+            return ARGB.color(recalculateAlpha(ARGB.alpha(old)), ARGB.red(old), ARGB.green(old), ARGB.blue(old));
+        }
+        return old;
+    }
+
+    public static int recalculateAlpha(int old) {
+        if (shouldRenderTranslucent() && RenderUtils.renderOverride.overridesTransparency()) {
+            return (int) Math.min(getOpacity() * 255, old);
+        }
+        return old;
+    }
+
+    private static float getOpacity() {
         VisibilityTransition transition = VisibilityManager.getTransition(getCurrentRenderName());
         if (transition != null) {
             return transition.getOpacity();

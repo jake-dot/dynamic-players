@@ -2,6 +2,7 @@
 	"required": true,
 	"package": "ca.jakedot.eventhelper.mixin",
 	"compatibilityLevel": "JAVA_21",
+	"plugin": "ca.jakedot.eventhelper.mixin.EventHelperMixinPlugin",
 	"mixins": [
 		"BufferBuilderMixin",
 		"EquipmentLayerRendererMixin",
@@ -11,7 +12,8 @@
 		"EntityRenderDispatcherMixin",
 		"EntityRendererMixin",
 		"BufferSourceMixin",
-		"LevelRendererMixin"
+		"LevelRendererMixin",
+		"ColorAttributeMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
