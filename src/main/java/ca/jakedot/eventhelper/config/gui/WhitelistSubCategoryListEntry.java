@@ -105,7 +105,7 @@ public class WhitelistSubCategoryListEntry extends SubCategoryListEntry {
 
     private void createNewEntry(PlayerGroup group) {
         List<Object> children = this.getChildren();
-        PlayerGroupListEntry entry = new PlayerGroupListEntry(Component.literal("Group " + (this.getValue().size() + 1)), group);
+        PlayerGroupListEntry entry = new PlayerGroupListEntry(Component.literal(group.name()), group);
         AbstractWidget removeWidget = Button.builder(Component.translatable("event_helper.options.remove_group"), button -> {
             this.getValue().remove(entry);
             this.removeWidgetList.remove(entry);

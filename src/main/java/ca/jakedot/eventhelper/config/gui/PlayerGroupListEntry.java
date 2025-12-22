@@ -41,7 +41,7 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
         this.addButtonCell = new AddButtonCell(this);
         this.nameWidget = new EditBox(Minecraft.getInstance().font, 100, 18, Component.empty());
         this.nameWidget.setBordered(false);
-        this.nameWidget.setValue(fieldName.getString());
+        this.nameWidget.setValue(value.name());
         this.nameWidget.moveCursorToStart(false);
         this.nameWidget.setHint(fieldName);
         this.nameWidget.setFormatter((string, firstCharacterIndex) -> FormattedCharSequence.forward(
