@@ -15,7 +15,7 @@ public class VisibilityManager {
 
     public static void updateWhitelist(List<PlayerGroup> whitelistGroups) {
         VisibilityManager.whitelist.clear();
-        EventHelper.getConfig().whitelistGroups()
+        whitelistGroups
                 .stream()
                 .filter(PlayerGroup::enabled)
                 .map(PlayerGroup::players)
