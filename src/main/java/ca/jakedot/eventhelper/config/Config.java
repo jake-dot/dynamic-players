@@ -1,6 +1,7 @@
 package ca.jakedot.eventhelper.config;
 
 import ca.jakedot.eventhelper.PlayerGroup;
+import ca.jakedot.eventhelper.visibility.VisibilityManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
@@ -23,16 +24,18 @@ public class Config {
 
     public static Config load() {
         File configFile = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_NAME).toFile();
+        Config config;
         if (!configFile.exists()) {
-            Config config = new Config();
+            config = new Config();
             config.save();
-            return config;
         }
         try (FileReader reader = new FileReader(configFile)) {
-            return GSON.fromJson(reader, Config.class);
+            config = GSON.fromJson(reader, Config.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        VisibilityManager.updateWhitelist(config.whitelistGroups);
+        return config;
     }
 
     private List<PlayerGroup> whitelistGroups = List.of(PlayerGroup.createDefaultGroup(1));
