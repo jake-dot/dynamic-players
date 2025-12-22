@@ -36,7 +36,7 @@ public class Config {
     }
 
     private List<PlayerGroup> whitelistGroups = List.of(PlayerGroup.createDefaultGroup(1));
-    private long transitionTime = 100L;
+    private long transitionTime = 150L;
 
     public List<PlayerGroup> whitelistGroups() {
         return this.whitelistGroups;
