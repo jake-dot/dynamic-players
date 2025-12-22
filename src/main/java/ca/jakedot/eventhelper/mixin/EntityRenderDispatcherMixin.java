@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.LevelReader;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -35,6 +36,16 @@ public class EntityRenderDispatcherMixin {
     public void wrapEntityRender(EntityRenderer<?, ?> entityRenderer, EntityRenderState entityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, Operation<Void> original) {
         if (RenderUtils.shouldRender() || RenderUtils.shouldRenderTranslucent()) {
             RenderUtils.override(() -> original.call(entityRenderer, entityRenderState, poseStack, multiBufferSource, i), RenderOverride.TRANSLUCENT_CULL);
+        }
+    }
+
+    @WrapOperation(
+            method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;renderShadow(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;FFLnet/minecraft/world/level/LevelReader;F)V")
+    )
+    public void wrapShadowRender(PoseStack poseStack, MultiBufferSource multiBufferSource, EntityRenderState entityRenderState, float f, float g, LevelReader levelReader, float h, Operation<Void> original) {
+        if (RenderUtils.shouldRender() || RenderUtils.shouldRenderTranslucent()) {
+            RenderUtils.override(() -> original.call(poseStack, multiBufferSource, entityRenderState, f * RenderUtils.getOpacity(), g, levelReader, h), RenderOverride.NONE);
         }
     }
 }

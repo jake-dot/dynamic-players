@@ -54,7 +54,7 @@ public class RenderUtils {
         return old;
     }
 
-    private static float getOpacity() {
+    public static float getOpacity() {
         VisibilityTransition transition = VisibilityManager.getTransition(getCurrentRenderName());
         if (transition != null) {
             return transition.getOpacity();
