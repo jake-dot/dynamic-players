@@ -55,9 +55,11 @@ public class RenderUtils {
     }
 
     public static float getOpacity() {
-        VisibilityTransition transition = VisibilityManager.getTransition(getCurrentRenderName());
-        if (transition != null) {
-            return transition.getOpacity();
+        if (shouldRenderTranslucent()) {
+            VisibilityTransition transition = VisibilityManager.getTransition(getCurrentRenderName());
+            if (transition != null) {
+                return transition.getOpacity();
+            }
         }
         return VisibilityManager.isVisible(getCurrentRenderName()) ? 1.0F : 0.0F;
     }

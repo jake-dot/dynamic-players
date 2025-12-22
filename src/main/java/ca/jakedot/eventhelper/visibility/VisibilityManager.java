@@ -45,7 +45,9 @@ public class VisibilityManager {
     }
 
     public static boolean isVisible(String player) {
-        if (!VisibilityManager.playersHidden) {
+        if (player.isEmpty()) {
+            return true;
+        } else if (!VisibilityManager.playersHidden) {
             return true;
         } else {
             VisibilityTransition transition = getTransition(player);
