@@ -19,8 +19,10 @@ public class EntityRendererMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;renderNameTag(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V")
     )
     private void wrapNameTagRender(EntityRenderer<?, ?> entityRenderer, EntityRenderState entityRenderState, Component component, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, Operation<Void> original) {
-        if (RenderUtils.shouldRender()) {
-            RenderUtils.override(() -> original.call(entityRenderer, entityRenderState, component, poseStack, multiBufferSource, i), RenderOverride.NONE);
+        if (RenderUtils.shouldRender(true)) {
+            RenderUtils.withRenderOverride(() -> {
+                original.call(entityRenderer, entityRenderState, component, poseStack, multiBufferSource, i);
+            }, RenderOverride.NONE);
         }
     }
 }

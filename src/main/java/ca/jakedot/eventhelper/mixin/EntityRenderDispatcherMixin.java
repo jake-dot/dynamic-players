@@ -18,24 +18,24 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRenderDispatcherMixin {
-    @WrapMethod(
-            method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V"
-    )
-    public void wrapEntireRender(Entity entity, double d, double e, double f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, EntityRenderer<?, ?> entityRenderer, Operation<Void> original) {
+    @WrapMethod(method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V")
+    private void wrapEntireRender(Entity entity, double d, double e, double f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, EntityRenderer<?, ?> entityRenderer, Operation<Void> original) {
         if (entity instanceof RemotePlayer) {
-            RenderUtils.setCurrentRender((RemotePlayer) entity);
+            RenderUtils.setCurrentEntityRender((RemotePlayer) entity);
         }
         original.call(entity, d, e, f, g, poseStack, multiBufferSource, i, entityRenderer);
-        RenderUtils.clearCurrentRender();
+        RenderUtils.clearCurrentEntityRender();
     }
 
     @WrapOperation(
             method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderer;render(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V")
     )
-    public void wrapEntityRender(EntityRenderer<?, ?> entityRenderer, EntityRenderState entityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, Operation<Void> original) {
-        if (RenderUtils.shouldRender() || RenderUtils.shouldRenderTranslucent()) {
-            RenderUtils.override(() -> original.call(entityRenderer, entityRenderState, poseStack, multiBufferSource, i), RenderOverride.TRANSLUCENT_CULL);
+    private void wrapEntityRender(EntityRenderer<?, ?> entityRenderer, EntityRenderState entityRenderState, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, Operation<Void> original) {
+        if (RenderUtils.shouldRender(true)) {
+            RenderUtils.withRenderOverride(() -> {
+                original.call(entityRenderer, entityRenderState, poseStack, multiBufferSource, i);
+            }, RenderOverride.TRANSLUCENT_CULL);
         }
     }
 
@@ -43,9 +43,11 @@ public class EntityRenderDispatcherMixin {
             method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;renderShadow(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/entity/state/EntityRenderState;FFLnet/minecraft/world/level/LevelReader;F)V")
     )
-    public void wrapShadowRender(PoseStack poseStack, MultiBufferSource multiBufferSource, EntityRenderState entityRenderState, float f, float g, LevelReader levelReader, float h, Operation<Void> original) {
-        if (RenderUtils.shouldRender() || RenderUtils.shouldRenderTranslucent()) {
-            RenderUtils.override(() -> original.call(poseStack, multiBufferSource, entityRenderState, f * RenderUtils.getOpacity(), g, levelReader, h), RenderOverride.NONE);
+    private void wrapShadowRender(PoseStack poseStack, MultiBufferSource multiBufferSource, EntityRenderState entityRenderState, float f, float g, LevelReader levelReader, float h, Operation<Void> original) {
+        if (RenderUtils.shouldRender(true)) {
+            RenderUtils.withRenderOverride(() -> {
+                original.call(poseStack, multiBufferSource, entityRenderState, f * RenderUtils.getTargetOpacity(), g, levelReader, h);
+            }, RenderOverride.NONE);
         }
     }
 }

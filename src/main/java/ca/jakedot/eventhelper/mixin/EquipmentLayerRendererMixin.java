@@ -23,6 +23,8 @@ public class EquipmentLayerRendererMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;getArmorFoilBuffer(Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/renderer/RenderType;Z)Lcom/mojang/blaze3d/vertex/VertexConsumer;")
     )
     private static VertexConsumer wrapArmorRender(MultiBufferSource multiBufferSource, RenderType renderType, boolean bl, Operation<VertexConsumer> original) {
-        return RenderUtils.override(() -> original.call(multiBufferSource, renderType, bl), RenderOverride.TRANSLUCENT);
+        return RenderUtils.withRenderOverride(() -> {
+            return original.call(multiBufferSource, renderType, bl);
+        }, RenderOverride.TRANSLUCENT);
     }
 }

@@ -1,11 +1,8 @@
 package ca.jakedot.eventhelper.mixin;
 
-import ca.jakedot.eventhelper.visibility.RenderOverride;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(RenderType.CompositeState.class)

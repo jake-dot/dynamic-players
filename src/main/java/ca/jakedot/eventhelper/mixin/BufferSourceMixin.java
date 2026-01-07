@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(MultiBufferSource.BufferSource.class)
 public class BufferSourceMixin {
     @ModifyVariable(method = "getBuffer", at = @At("HEAD"))
-    public RenderType modifyRenderType(RenderType renderType) {
+    private RenderType modifyRenderType(RenderType renderType) {
         return RenderUtils.modifyRenderType(renderType);
     }
 }

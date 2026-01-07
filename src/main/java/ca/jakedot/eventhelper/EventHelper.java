@@ -37,7 +37,7 @@ public class EventHelper implements ModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (hideKey.consumeClick()) {
 				VisibilityManager.toggleVisibility();
-				if (VisibilityManager.arePlayersHidden()) {
+				if (VisibilityManager.playersHidden()) {
 					client.player.displayClientMessage(Component.translatable("event_helper.message.players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
 				} else {
 					client.player.displayClientMessage(Component.translatable("event_helper.message.players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);

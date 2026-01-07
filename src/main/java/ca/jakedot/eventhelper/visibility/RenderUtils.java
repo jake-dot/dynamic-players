@@ -10,76 +10,88 @@ import net.minecraft.util.ARGB;
 
 import java.util.function.Supplier;
 
-// we could assign these methods to variables in order to avoid repeat calls
 public class RenderUtils {
     private static RemotePlayer currentRender;
+    private static RenderOverride renderOverride = RenderOverride.NONE;
+    private static float targetOpacity = 1.0F;
 
-    private static String getCurrentRenderName() {
-        return RenderUtils.currentRender != null ? RenderUtils.currentRender.getGameProfile().getName() : "";
+    public static void setCurrentEntityRender(RemotePlayer entity) {
+        RenderUtils.currentRender = entity;
+        String identifier = RenderUtils.currentRender.getGameProfile().getName();
+
+        if (VisibilityManager.isWhitelisted(identifier)) {
+            RenderUtils.targetOpacity = 1.0F;
+        } else {
+            VisibilityTransition transition = VisibilityManager.getTransition(identifier);
+            if (transition != null) {
+                RenderUtils.targetOpacity = transition.getOpacity();
+            } else {
+                RenderUtils.targetOpacity = VisibilityManager.playersHidden() ? 0.0F : 1.0F;
+            }
+        }
+    }
+
+    public static void clearCurrentEntityRender() {
+        RenderUtils.currentRender = null;
+        RenderUtils.renderOverride = RenderOverride.NONE;
+        RenderUtils.targetOpacity = 1.0F;
+    }
+
+    public static float getTargetOpacity() {
+        return RenderUtils.targetOpacity;
+    }
+
+    public static int getTargetAlpha() {
+        return (int) (255 * getTargetOpacity());
+    }
+
+    public static int recalculateArgb(int oldArgb) {
+        if (shouldRenderTranslucent(false)) {
+            return ARGB.color(recalculateAlpha(ARGB.alpha(oldArgb)), ARGB.red(oldArgb), ARGB.green(oldArgb), ARGB.blue(oldArgb));
+        }
+        return oldArgb;
+    }
+
+    public static int recalculateAlpha(int oldAlpha) {
+        if (shouldRenderTranslucent(false)) {
+            return Math.min(getTargetAlpha(), oldAlpha);
+        }
+        return oldAlpha;
+    }
+
+    public static boolean shouldRender(boolean allowTranslucent) {
+        if (RenderUtils.currentRender == null) {
+            return true;
+        }
+        if (allowTranslucent) {
+            return RenderUtils.targetOpacity > 0.0F;
+        } else {
+            return RenderUtils.targetOpacity >= 1.0F;
+        }
     }
 
     public static boolean shouldRenderTranslucent() {
+        return shouldRenderTranslucent(true);
+    }
+
+    private static boolean shouldRenderTranslucent(boolean forceOverride) {
         if (RenderUtils.currentRender == null) {
             return false;
         }
-        if (VisibilityManager.isWhitelisted(getCurrentRenderName())) {
-            return false;
-        }
-        VisibilityTransition transition = VisibilityManager.getTransition(getCurrentRenderName());
-        if (transition != null) {
-            float opacity = transition.getOpacity();
-            return opacity > 0.0F && opacity < 1.0F;
+        if (forceOverride || RenderUtils.renderOverride != RenderOverride.NONE) {
+            return RenderUtils.targetOpacity > 0.0F && RenderUtils.targetOpacity < 1.0F;
         }
         return false;
     }
 
-    public static boolean shouldRender() {
-        if (RenderUtils.currentRender == null) {
-            return true;
-        }
-        return VisibilityManager.isVisible(getCurrentRenderName());
+    public static void withRenderOverride(Runnable callback, RenderOverride renderOverride) {
+        withRenderOverride(() -> {
+            callback.run();
+            return null;
+        }, renderOverride);
     }
 
-    public static int recalculateArgb(int old) {
-        if (shouldRenderTranslucent() && RenderUtils.renderOverride.overridesTransparency()) {
-            return ARGB.color(recalculateAlpha(ARGB.alpha(old)), ARGB.red(old), ARGB.green(old), ARGB.blue(old));
-        }
-        return old;
-    }
-
-    public static int recalculateAlpha(int old) {
-        if (shouldRenderTranslucent() && RenderUtils.renderOverride.overridesTransparency()) {
-            return (int) Math.min(getOpacity() * 255, old);
-        }
-        return old;
-    }
-
-    public static float getOpacity() {
-        if (shouldRenderTranslucent()) {
-            VisibilityTransition transition = VisibilityManager.getTransition(getCurrentRenderName());
-            if (transition != null) {
-                return transition.getOpacity();
-            }
-        }
-        return VisibilityManager.isVisible(getCurrentRenderName()) ? 1.0F : 0.0F;
-    }
-
-    public static void setCurrentRender(RemotePlayer current) {
-        RenderUtils.currentRender = current;
-    }
-
-    public static void clearCurrentRender() {
-        RenderUtils.currentRender = null;
-        RenderUtils.renderOverride = RenderOverride.NONE;
-    }
-
-    private static RenderOverride renderOverride = RenderOverride.NONE;
-
-    public static RenderOverride getRenderOverride() {
-        return RenderUtils.renderOverride;
-    }
-
-    public static <T> T override(Supplier<T> callback, RenderOverride renderOverride) {
+    public static <T> T withRenderOverride(Supplier<T> callback, RenderOverride renderOverride) {
         if (shouldRenderTranslucent()) {
             RenderOverride oldValue = RenderUtils.renderOverride;
             RenderUtils.renderOverride = renderOverride;
@@ -92,7 +104,7 @@ public class RenderUtils {
     }
 
     public static RenderType modifyRenderType(RenderType renderType) {
-        if (!shouldRenderTranslucent() || !RenderUtils.renderOverride.overridesTransparency()) {
+        if (!shouldRenderTranslucent(false)) {
             return renderType;
         }
         if (!(renderType instanceof RenderType.CompositeRenderType)) {
@@ -103,13 +115,13 @@ public class RenderUtils {
         }
 
         RenderType.CompositeState state = ((CompositeRenderTypeAccessor)renderType).event_helper$getState();
-        state = overrideState(state);
+        state = modifyState(state);
         if (state == null) {
             RenderUtils.renderOverride.cacheRenderType(renderType, null);
             return renderType;
         }
 
-        RenderType newRenderType = RenderType.create(
+        RenderType modifiedRenderType = RenderType.create(
                 ((RenderStateShardAccessor)renderType).event_helper$getName(),
                 renderType.format(),
                 renderType.mode(),
@@ -118,11 +130,11 @@ public class RenderUtils {
                 renderType.sortOnUpload(),
                 state
         );
-        RenderUtils.renderOverride.cacheRenderType(renderType, newRenderType);
-        return newRenderType;
+        RenderUtils.renderOverride.cacheRenderType(renderType, modifiedRenderType);
+        return modifiedRenderType;
     }
 
-    private static RenderType.CompositeState overrideState(RenderType.CompositeState state) {
+    private static RenderType.CompositeState modifyState(RenderType.CompositeState state) {
         CompositeStateMixin stateAccessor = (CompositeStateMixin) (Object) state;
 
         boolean replaceTransparency = RenderUtils.renderOverride.overridesTransparency() && !stateAccessor.event_helper$getTransparencyState().equals(RenderStateShard.TRANSLUCENT_TRANSPARENCY);

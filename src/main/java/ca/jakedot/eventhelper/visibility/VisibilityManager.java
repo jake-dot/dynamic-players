@@ -22,7 +22,7 @@ public class VisibilityManager {
                 .forEach(VisibilityManager.whitelist::addAll);
     }
 
-    public static boolean arePlayersHidden() {
+    public static boolean playersHidden() {
         return VisibilityManager.playersHidden;
     }
 
@@ -42,20 +42,6 @@ public class VisibilityManager {
 
     public static boolean isWhitelisted(String player) {
         return VisibilityManager.whitelist.contains(player); // TODO toggle whitelist
-    }
-
-    public static boolean isVisible(String player) {
-        if (player.isEmpty()) {
-            return true;
-        } else if (!VisibilityManager.playersHidden) {
-            return true;
-        } else {
-            VisibilityTransition transition = getTransition(player);
-            if (transition != null && transition.getOpacity() == 1.0F) {
-                return true;
-            }
-            return isWhitelisted(player);
-        }
     }
 
     private static VisibilityTransition visibilityTransition;
