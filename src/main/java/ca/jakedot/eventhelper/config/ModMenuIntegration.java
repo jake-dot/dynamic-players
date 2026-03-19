@@ -35,7 +35,7 @@ public class ModMenuIntegration implements ModMenuApi {
                 });
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
-        ConfigCategory category = builder.getOrCreateCategory(title);
+        ConfigCategory category = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.basic"));
 
         category.addEntry(new WhitelistSubCategoryListEntry(Component.translatable("event_helper.options.edit_whitelist"), config.whitelistGroups(), config::setWhitelistGroups));
 
@@ -53,6 +53,8 @@ public class ModMenuIntegration implements ModMenuApi {
 //                .setSaveConsumer(config::savePreserveHitboxes)
 //                .setDefaultValue(Config.DEFAULT_PRESERVE_HITBOXES)
 //                .build());
+
+        ConfigCategory advancedCategory = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.advanced"));
 
         return builder.build();
     }

@@ -8,6 +8,8 @@
   "event_helper.message.near_players_shown": "Nearby Players: Visible",
 
   "event_helper.options.title": "Event Helper Config",
+  "event_helper.options.category.basic": "Basic",
+  "event_helper.options.category.advanced": "Advanced",
   "event_helper.options.edit_whitelist": "Edit Whitelist",
   "event_helper.options.visibility_transition_time":  "Visibility Transition Time",
   "event_helper.options.nearby_player_distance":  "Nearby Player Range",
