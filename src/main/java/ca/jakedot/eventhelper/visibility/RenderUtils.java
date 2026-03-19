@@ -1,8 +1,11 @@
 package ca.jakedot.eventhelper.visibility;
 
+import ca.jakedot.eventhelper.EventHelper;
 import ca.jakedot.eventhelper.mixin.CompositeRenderTypeAccessor;
 import ca.jakedot.eventhelper.mixin.CompositeStateMixin;
 import ca.jakedot.eventhelper.mixin.RenderStateShardAccessor;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -21,13 +24,35 @@ public class RenderUtils {
 
         if (VisibilityManager.isWhitelisted(identifier)) {
             RenderUtils.targetOpacity = 1.0F;
-        } else {
-            VisibilityTransition transition = VisibilityManager.getTransition(identifier);
-            if (transition != null) {
-                RenderUtils.targetOpacity = transition.getOpacity();
-            } else {
-                RenderUtils.targetOpacity = VisibilityManager.playersHidden() ? 0.0F : 1.0F;
+        }
+
+        if (VisibilityManager.nearPlayersHidden()) { // && does not bypass via whitelist
+            AbstractClientPlayer self = Minecraft.getInstance().player;
+            float threshold = (float) EventHelper.getConfig().nearbyPlayerDistance();
+            float transitionRange = 1.0F;
+            float dist = self.distanceTo(entity); // TODO get distance between bounding box edges
+            if (dist <= threshold - transitionRange) {
+                RenderUtils.targetOpacity = 0.0F;
+            } else if (dist < threshold) {
+                float transitionDist = dist - (threshold - transitionRange);
+                RenderUtils.targetOpacity = Math.clamp(transitionDist / transitionRange, 0.0F, 1.0F); // TODO add min opacity from config
             }
+        }
+
+        if (RenderUtils.targetOpacity == 0.0F) {
+            return;
+        }
+
+        if (!VisibilityManager.isWhitelisted(identifier)) {
+            VisibilityTransition transition = VisibilityManager.getTransition(identifier);
+            float newOpacity;
+            if (transition != null) {
+                newOpacity = transition.getOpacity();
+            } else {
+                newOpacity = VisibilityManager.playersHidden() ? 0.0F : 1.0F;
+            }
+            // we want to set to the lowest visibility available
+            RenderUtils.targetOpacity = Math.min(RenderUtils.targetOpacity, newOpacity);
         }
     }
 

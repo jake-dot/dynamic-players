@@ -4,10 +4,13 @@
 
   "event_helper.message.players_hidden": "Players: Hidden",
   "event_helper.message.players_shown": "Players: Visible",
+  "event_helper.message.near_players_hidden": "Nearby Players: Hidden",
+  "event_helper.message.near_players_shown": "Nearby Players: Visible",
 
   "event_helper.options.title": "Event Helper Config",
   "event_helper.options.edit_whitelist": "Edit Whitelist",
   "event_helper.options.visibility_transition_time":  "Visibility Transition Time",
+  "event_helper.options.nearby_player_distance":  "Nearby Player Range",
   "event_helper.options.add_player": "Add Player",
   "event_helper.options.create_group": "Create Group",
   "event_helper.options.remove_group": "Remove Group"

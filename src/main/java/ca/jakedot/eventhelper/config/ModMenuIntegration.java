@@ -44,11 +44,11 @@ public class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(defaultConfig::transitionTime)
                 .build());
 
-//        category.addEntry(entryBuilder.startDoubleField(Component.translatable("event_helper.options.nearby_player_range"), 3.0)
-//                .setSaveConsumer(config::saveSpectatorDistance)
-//                .setDefaultValue(Config.DEFAULT_SPECTATOR_DISTANCE)
-//                .build());
-//
+        category.addEntry(entryBuilder.startDoubleField(Component.translatable("event_helper.options.nearby_player_distance"), config.nearbyPlayerDistance())
+                .setSaveConsumer(config::setNearbyPlayerDistance)
+                .setDefaultValue(defaultConfig::nearbyPlayerDistance)
+                .build());
+
 //        category.addEntry(entryBuilder.startBooleanToggle(Component.translatable("event_helper.options.preserve_hitboxes"), false)
 //                .setSaveConsumer(config::savePreserveHitboxes)
 //                .setDefaultValue(Config.DEFAULT_PRESERVE_HITBOXES)

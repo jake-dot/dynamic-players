@@ -14,15 +14,14 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.KeyManager;
-
 public class EventHelper implements ModInitializer {
 	public static final String MOD_ID = "event_helper";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	private static Config config;
 
-	private static KeyMapping hideKey;
+	private static KeyMapping hideAllKey;
+	private static KeyMapping hideNearKey;
 
 	public static Config getConfig() {
 		return EventHelper.config;
@@ -32,15 +31,24 @@ public class EventHelper implements ModInitializer {
 	public void onInitialize() {
 		EventHelper.config = Config.load();
 
-		hideKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "category.event_helper"));
+		hideAllKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_all", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "category.event_helper"));
+		hideNearKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_near", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "category.event_helper"));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			while (hideKey.consumeClick()) {
-				VisibilityManager.toggleVisibility();
+			while (hideAllKey.consumeClick()) {
+				VisibilityManager.toggleVisibilityAll();
 				if (VisibilityManager.playersHidden()) {
 					client.player.displayClientMessage(Component.translatable("event_helper.message.players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
 				} else {
 					client.player.displayClientMessage(Component.translatable("event_helper.message.players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+				}
+			}
+			while (hideNearKey.consumeClick()) {
+				VisibilityManager.toggleVisibilityNear();
+				if (VisibilityManager.nearPlayersHidden()) {
+					client.player.displayClientMessage(Component.translatable("event_helper.message.near_players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+				} else {
+					client.player.displayClientMessage(Component.translatable("event_helper.message.near_players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
 				}
 			}
 		});

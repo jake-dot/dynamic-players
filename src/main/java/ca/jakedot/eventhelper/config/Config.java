@@ -40,6 +40,7 @@ public class Config {
 
     private List<PlayerGroup> whitelistGroups = List.of(PlayerGroup.createDefaultGroup(1));
     private long transitionTime = 150L;
+    private double nearbyPlayerDistance = 3.0;
 
     public List<PlayerGroup> whitelistGroups() {
         return this.whitelistGroups;
@@ -49,12 +50,20 @@ public class Config {
         return this.transitionTime;
     }
 
+    public double nearbyPlayerDistance() {
+        return this.nearbyPlayerDistance;
+    }
+
     public void setWhitelistGroups(List<PlayerGroup> whitelistGroups) {
         this.whitelistGroups = whitelistGroups;
     }
 
     public void setTransitionTime(long transitionTime) {
         this.transitionTime = transitionTime;
+    }
+
+    public void setNearbyPlayerDistance(double nearbyPlayerDistance) {
+        this.nearbyPlayerDistance = nearbyPlayerDistance;
     }
 
     public void save() {
