@@ -1,22 +1,21 @@
 package ca.jakedot.eventhelper.visibility;
 
 import ca.jakedot.eventhelper.EventHelper;
-import ca.jakedot.eventhelper.mixin.CompositeRenderTypeAccessor;
-import ca.jakedot.eventhelper.mixin.CompositeStateMixin;
-import ca.jakedot.eventhelper.mixin.RenderStateShardAccessor;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.ARGB;
 
-import java.util.function.Supplier;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RenderUtils {
     private static RemotePlayer currentRender;
     private static RenderOverride renderOverride = RenderOverride.NONE;
     private static float targetOpacity = 1.0F;
+
+    private static final Map<BufferBuilder, RenderOverride> bufferOverrideMap = new HashMap<>();
 
     public static void setCurrentEntityRender(RemotePlayer entity) {
         RenderUtils.currentRender = entity;
@@ -62,12 +61,35 @@ public class RenderUtils {
         RenderUtils.targetOpacity = 1.0F;
     }
 
+    public static RenderOverride getRenderOverride() {
+        return RenderUtils.renderOverride;
+    }
+
     public static float getTargetOpacity() {
         return RenderUtils.targetOpacity;
     }
 
     public static int getTargetAlpha() {
         return (int) (255 * getTargetOpacity());
+    }
+
+    public static void markBuffer(BufferBuilder bufferBuilder) {
+        if (RenderUtils.renderOverride != RenderOverride.NONE) {
+            RenderOverride existingOverride = RenderUtils.bufferOverrideMap.getOrDefault(bufferBuilder, RenderOverride.NONE);
+            if (RenderUtils.renderOverride.ordinal() > existingOverride.ordinal()) {
+                RenderUtils.bufferOverrideMap.put(bufferBuilder, RenderUtils.renderOverride);
+            }
+        }
+    }
+
+    public static RenderOverride consumeBufferOverride(BufferBuilder bufferBuilder) {
+        RenderOverride bufferOverride = RenderUtils.bufferOverrideMap.getOrDefault(bufferBuilder, RenderOverride.NONE);
+        RenderUtils.bufferOverrideMap.remove(bufferBuilder);
+        return bufferOverride;
+    }
+
+    public static void unmarkBuffers() {
+        RenderUtils.bufferOverrideMap.clear();
     }
 
     public static int recalculateArgb(int oldArgb) {
@@ -95,11 +117,7 @@ public class RenderUtils {
         }
     }
 
-    public static boolean shouldRenderTranslucent() {
-        return shouldRenderTranslucent(true);
-    }
-
-    private static boolean shouldRenderTranslucent(boolean forceOverride) {
+    public static boolean shouldRenderTranslucent(boolean forceOverride) {
         if (RenderUtils.currentRender == null) {
             return false;
         }
@@ -110,87 +128,13 @@ public class RenderUtils {
     }
 
     public static void withRenderOverride(Runnable callback, RenderOverride renderOverride) {
-        withRenderOverride(() -> {
-            callback.run();
-            return null;
-        }, renderOverride);
-    }
-
-    public static <T> T withRenderOverride(Supplier<T> callback, RenderOverride renderOverride) {
-        if (shouldRenderTranslucent()) {
+        if (shouldRenderTranslucent(true)) {
             RenderOverride oldValue = RenderUtils.renderOverride;
             RenderUtils.renderOverride = renderOverride;
-            T result = callback.get();
+            callback.run();
             RenderUtils.renderOverride = oldValue;
-            return result;
         } else {
-            return callback.get();
+            callback.run();
         }
-    }
-
-    public static RenderType modifyRenderType(RenderType renderType) {
-        if (!shouldRenderTranslucent(false)) {
-            return renderType;
-        }
-        if (!(renderType instanceof RenderType.CompositeRenderType)) {
-            return renderType;
-        }
-        if (RenderUtils.renderOverride.isRenderTypeCached(renderType)) {
-            return RenderUtils.renderOverride.getCachedRenderType(renderType);
-        }
-
-        RenderType.CompositeState state = ((CompositeRenderTypeAccessor)renderType).event_helper$getState();
-        state = modifyState(state);
-        if (state == null) {
-            RenderUtils.renderOverride.cacheRenderType(renderType, null);
-            return renderType;
-        }
-
-        RenderType modifiedRenderType = RenderType.create(
-                ((RenderStateShardAccessor)renderType).event_helper$getName(),
-                renderType.format(),
-                renderType.mode(),
-                renderType.bufferSize(),
-                renderType.affectsCrumbling(),
-                renderType.sortOnUpload(),
-                state
-        );
-        RenderUtils.renderOverride.cacheRenderType(renderType, modifiedRenderType);
-        return modifiedRenderType;
-    }
-
-    private static RenderType.CompositeState modifyState(RenderType.CompositeState state) {
-        CompositeStateMixin stateAccessor = (CompositeStateMixin) (Object) state;
-
-        boolean replaceTransparency = RenderUtils.renderOverride.overridesTransparency() && !stateAccessor.event_helper$getTransparencyState().equals(RenderStateShard.TRANSLUCENT_TRANSPARENCY);
-        boolean replaceCull = RenderUtils.renderOverride.overridesCull() && !stateAccessor.event_helper$getCullState().equals(RenderStateShard.CULL);
-        if (!replaceTransparency && !replaceCull) {
-            return null;
-        }
-
-        RenderStateShard.TransparencyStateShard newTransparencyState = stateAccessor.event_helper$getTransparencyState();
-        RenderStateShard.CullStateShard newCullState = stateAccessor.event_helper$getCullState();
-        if (replaceTransparency) {
-            newTransparencyState = RenderStateShard.TRANSLUCENT_TRANSPARENCY;
-        }
-        if (replaceCull) {
-            newCullState = RenderStateShard.CULL;
-        }
-
-        return RenderType.CompositeState.builder()
-                .setTextureState(stateAccessor.event_helper$getTextureState())
-                .setShaderState(stateAccessor.event_helper$getShaderState())
-                .setTransparencyState(newTransparencyState)
-                .setDepthTestState(stateAccessor.event_helper$getDepthTestState())
-                .setCullState(newCullState)
-                .setLightmapState(stateAccessor.event_helper$getLightmapState())
-                .setOverlayState(stateAccessor.event_helper$getOverlayState())
-                .setLayeringState(stateAccessor.event_helper$getLayeringState())
-                .setOutputState(stateAccessor.event_helper$getOutputState())
-                .setTexturingState(stateAccessor.event_helper$getTexturingState())
-                .setWriteMaskState(stateAccessor.event_helper$getWriteMaskState())
-                .setLineState(stateAccessor.event_helper$getevent_helper$getLineState())
-                .setColorLogicState(stateAccessor.event_helper$getevent_helper$getColorLogicState())
-                .createCompositeState(stateAccessor.event_helper$getOutlineProperty());
     }
 }

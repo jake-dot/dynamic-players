@@ -1,49 +1,23 @@
 package ca.jakedot.eventhelper.visibility;
 
-import net.minecraft.client.renderer.RenderType;
-
-import java.util.HashMap;
-import java.util.Map;
-
 public enum RenderOverride {
-    NONE(false, false),
+    NONE(false, true),
     TRANSLUCENT(true, false),
-    TRANSLUCENT_CULL(true, true);
+    TRANSLUCENT_NO_CULL(true, true);
 
-    private final Map<RenderType, RenderType> renderTypeCache = new HashMap<>();
     private final boolean overrideTransparency;
-    private final boolean overrideCull;
+    private final boolean noCull;
 
-    RenderOverride(boolean overrideTransparency, boolean overrideCull) {
+    RenderOverride(boolean overrideTransparency, boolean noCull) {
         this.overrideTransparency = overrideTransparency;
-        this.overrideCull = overrideCull;
+        this.noCull = noCull;
     }
 
     public boolean overridesTransparency() {
         return this.overrideTransparency;
     }
 
-    public boolean overridesCull() {
-        return overrideCull;
-    }
-
-    public boolean isRenderTypeCached(RenderType renderType) {
-        return this.renderTypeCache.containsKey(renderType);
-    }
-
-    public RenderType getCachedRenderType(RenderType renderType) {
-        RenderType cachedRenderType = this.renderTypeCache.get(renderType);
-        if (cachedRenderType == null) {
-            return renderType;
-        }
-        return cachedRenderType;
-    }
-
-    public void cacheRenderType(RenderType key, RenderType value) {
-        this.renderTypeCache.put(key, value);
-    }
-
-    public void clearCache() {
-        this.renderTypeCache.clear();
+    public boolean noCull() {
+        return noCull;
     }
 }

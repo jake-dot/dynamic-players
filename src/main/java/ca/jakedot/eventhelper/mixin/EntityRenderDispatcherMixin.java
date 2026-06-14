@@ -35,7 +35,7 @@ public class EntityRenderDispatcherMixin {
         if (RenderUtils.shouldRender(true)) {
             RenderUtils.withRenderOverride(() -> {
                 original.call(entityRenderer, entityRenderState, poseStack, multiBufferSource, i);
-            }, RenderOverride.TRANSLUCENT_CULL);
+            }, RenderOverride.TRANSLUCENT);
         }
     }
 

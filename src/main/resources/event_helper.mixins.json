@@ -6,14 +6,12 @@
 	"mixins": [
 		"BufferBuilderMixin",
 		"EquipmentLayerRendererMixin",
-		"CompositeRenderTypeAccessor",
-		"RenderStateShardAccessor",
-		"CompositeStateMixin",
 		"EntityRenderDispatcherMixin",
 		"EntityRendererMixin",
 		"BufferSourceMixin",
 		"LevelRendererMixin",
-		"ColorAttributeMixin"
+		"ColorAttributeMixin",
+		"RenderStateShardMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
