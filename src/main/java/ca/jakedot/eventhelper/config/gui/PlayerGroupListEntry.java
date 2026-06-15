@@ -5,6 +5,7 @@ import me.shedaniel.clothconfig2.gui.ClothConfigScreen;
 import me.shedaniel.clothconfig2.gui.entries.AbstractListListEntry;
 import me.shedaniel.clothconfig2.gui.widget.DynamicEntryListWidget;
 import me.shedaniel.math.Rectangle;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -31,6 +32,9 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
     private final AddButtonCell addButtonCell;
     private final EditBox nameWidget;
     private final AbstractWidget toggleWidget;
+    private final AbstractWidget removeWidget;
+    private Runnable onRemove;
+    private long removeConfirmationTimestamp;
     private boolean enabled;
     private PlayerGroup original;
 
@@ -57,8 +61,17 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
             }
         }).size(18, 18).build();
         this.toggleWidget.setAlpha(0f);
+        this.removeWidget = Button.builder(Component.translatable("event_helper.options.remove_group"), button -> {
+            if (removeConfirmationTimestamp == 0) {
+                removeConfirmationTimestamp = System.currentTimeMillis();
+                button.setMessage(button.getMessage().copy().withStyle(ChatFormatting.RED));
+            } else {
+                this.onRemove.run();
+            }
+        }).width(80).build();
+        onRemove = () -> {};
 
-        this.widgets.addAll(0, List.of(this.nameWidget, this.toggleWidget));
+        this.widgets.addAll(0, List.of(this.toggleWidget, this.nameWidget, this.removeWidget));
 
         this.resetWidget.visible = false;
         this.widgets.remove(this.resetWidget);
@@ -69,6 +82,10 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
     @Override
     public PlayerGroupListEntry self() {
         return this;
+    }
+
+    public void onRemove(Runnable onRemove) {
+        this.onRemove = onRemove;
     }
 
     @Override
@@ -100,6 +117,14 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
 
         graphics.fill(x + 20, y + 15, x + 20 + (this.nameWidget.isFocused() ? this.nameWidget.getWidth() : underlineWidth), y + 16, -5592406 /*this.getPreferredTextColor()*/); // where do we get the color from help
         this.nameWidget.render(graphics, mouseX, mouseY, delta);
+
+        if (this.removeConfirmationTimestamp != 0 && System.currentTimeMillis() - this.removeConfirmationTimestamp > 5000L) {
+            this.removeConfirmationTimestamp = 0L;
+            this.removeWidget.setMessage(this.removeWidget.getMessage().copy().setStyle(Style.EMPTY));
+        }
+        this.removeWidget.setX(x + entryWidth - this.removeWidget.getWidth());
+        this.removeWidget.setY(y);
+        this.removeWidget.render(graphics, mouseX, mouseY, delta);
     }
 
     public PlayerGroup getPlayerGroup() {
