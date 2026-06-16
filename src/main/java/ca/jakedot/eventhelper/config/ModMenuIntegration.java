@@ -44,9 +44,9 @@ public class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(defaultConfig::transitionTime)
                 .build());
 
-        category.addEntry(entryBuilder.startDoubleField(Component.translatable("event_helper.options.nearby_player_distance"), config.nearbyPlayerDistance())
-                .setSaveConsumer(config::setNearbyPlayerDistance)
-                .setDefaultValue(defaultConfig::nearbyPlayerDistance)
+        category.addEntry(entryBuilder.startDoubleField(Component.translatable("event_helper.options.nearby_player_distance"), config.nearbyPlayersDistance())
+                .setSaveConsumer(config::setNearbyPlayersDistance)
+                .setDefaultValue(defaultConfig::nearbyPlayersDistance)
                 .build());
 
 //        category.addEntry(entryBuilder.startBooleanToggle(Component.translatable("event_helper.options.preserve_hitboxes"), false)
@@ -56,6 +56,11 @@ public class ModMenuIntegration implements ModMenuApi {
 
         ConfigCategory advancedCategory = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.advanced"));
 
+        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("event_helper.options.nearby_players_minimum_opacity"), (int) (config.nearbyPlayersHiddenOpacity() * 100), 0, 100)
+                .setTextGetter(value -> Component.literal(value + "%"))
+                .setSaveConsumer(value -> config.setNearbyPlayersHiddenOpacity(value / 100.0))
+                .setDefaultValue(() -> (int) (defaultConfig.nearbyPlayersHiddenOpacity() * 100))
+                .build());
         return builder.build();
     }
 }

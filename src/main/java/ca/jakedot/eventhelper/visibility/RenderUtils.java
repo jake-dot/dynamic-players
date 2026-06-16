@@ -6,59 +6,99 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.util.ARGB;
+import net.minecraft.world.entity.Entity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class RenderUtils {
-    private static RemotePlayer currentRender;
     private static RenderOverride renderOverride = RenderOverride.NONE;
     private static float targetOpacity = 1.0F;
 
+    private static final Map<Entity, Float> visibilityMap = new HashMap<>();
     private static final Map<BufferBuilder, RenderOverride> bufferOverrideMap = new HashMap<>();
 
-    public static void setCurrentEntityRender(RemotePlayer entity) {
-        RenderUtils.currentRender = entity;
-        String identifier = RenderUtils.currentRender.getGameProfile().getName();
-
-        if (VisibilityManager.isWhitelisted(identifier)) {
-            RenderUtils.targetOpacity = 1.0F;
-        }
-
-        if (VisibilityManager.nearPlayersHidden()) { // && does not bypass via whitelist
-            AbstractClientPlayer self = Minecraft.getInstance().player;
-            float threshold = (float) EventHelper.getConfig().nearbyPlayerDistance();
-            float transitionRange = 1.0F;
-            float dist = self.distanceTo(entity); // TODO get distance between bounding box edges
-            if (dist <= threshold - transitionRange) {
-                RenderUtils.targetOpacity = 0.0F;
-            } else if (dist < threshold) {
-                float transitionDist = dist - (threshold - transitionRange);
-                RenderUtils.targetOpacity = Math.clamp(transitionDist / transitionRange, 0.0F, 1.0F); // TODO add min opacity from config
+    public static List<Entity> sortByRenderingOrder(List<Entity> list) {
+        Map<Entity, Float> distanceMap = new HashMap<>();
+        Iterator<Entity> iter = list.iterator();
+        while (iter.hasNext()) {
+            Entity entity = iter.next();
+            if (!(entity instanceof RemotePlayer)) {
+                continue;
             }
+            float opacity = RenderUtils.getVisibility((RemotePlayer) entity, distance -> distanceMap.put(entity, distance));
+            if (opacity == 1.0F) {
+                continue;
+            }
+            RenderUtils.visibilityMap.put(entity, opacity);
+            iter.remove();
         }
 
-        if (RenderUtils.targetOpacity == 0.0F) {
-            return;
+        List<Entity> sortedList = new ArrayList<>(list);
+        RenderUtils.visibilityMap.keySet().stream()
+                .sorted((o1, o2) -> Float.compare(distanceMap.get(o2), distanceMap.get(o1)))
+                .forEach(sortedList::add);
+        return sortedList;
+    }
+
+    private static float getVisibility(RemotePlayer entity, Consumer<Float> distanceConsumer) {
+        String identifier = entity.getGameProfile().getName();
+        float targetOpacity = 1.0F;
+        double distSqr = Minecraft.getInstance().player.distanceToSqr(entity);
+        if (distanceConsumer != null) {
+            distanceConsumer.accept((float) distSqr);
         }
 
         if (!VisibilityManager.isWhitelisted(identifier)) {
             VisibilityTransition transition = VisibilityManager.getTransition(identifier);
-            float newOpacity;
             if (transition != null) {
-                newOpacity = transition.getOpacity();
-            } else {
-                newOpacity = VisibilityManager.playersHidden() ? 0.0F : 1.0F;
+                targetOpacity = transition.getOpacity();
+            } else if (VisibilityManager.playersHidden()) {
+                targetOpacity = 0.0F;
             }
-            // we want to set to the lowest visibility available
-            RenderUtils.targetOpacity = Math.min(RenderUtils.targetOpacity, newOpacity);
         }
+        if (targetOpacity == 0.0F) {
+            return targetOpacity;
+        }
+
+        if (VisibilityManager.nearPlayersHidden()) { // && does not bypass via whitelist
+            AbstractClientPlayer self = Minecraft.getInstance().player;
+            float threshold = (float) EventHelper.getConfig().nearbyPlayersDistance(); // TODO option to auto adjust to player scale
+            float transitionRange = 1.0F;
+            if (distSqr <= Math.pow(threshold, 2)) {
+                float dist = self.distanceTo(entity);
+                float minOpacity = (float) EventHelper.getConfig().nearbyPlayersHiddenOpacity();
+                if (dist <= threshold - transitionRange) {
+                    targetOpacity = Math.min(targetOpacity, minOpacity);
+                } else if (dist < threshold) {
+                    float transitionDist = dist - (threshold - transitionRange);
+                    float rawOpacity = Math.clamp(transitionDist / transitionRange, 0.0F, 1.0F);
+                    float finalOpacity = minOpacity + rawOpacity * (1.0F - minOpacity);
+                    targetOpacity = Math.min(targetOpacity, finalOpacity);
+                }
+            }
+        }
+
+        // perhaps run this final opacity value through a separate method to compare multipliers against each other
+        return targetOpacity;
     }
 
-    public static void clearCurrentEntityRender() {
-        RenderUtils.currentRender = null;
+    public static void beginRender(RemotePlayer entity) {
+        RenderUtils.targetOpacity = RenderUtils.visibilityMap.getOrDefault(entity, 1.0F);
+    }
+
+    public static void endRender() {
         RenderUtils.renderOverride = RenderOverride.NONE;
         RenderUtils.targetOpacity = 1.0F;
+    }
+
+    public static void reset() {
+        RenderUtils.visibilityMap.clear();
+        RenderUtils.bufferOverrideMap.clear();
     }
 
     public static RenderOverride getRenderOverride() {
@@ -88,10 +128,6 @@ public class RenderUtils {
         return bufferOverride;
     }
 
-    public static void unmarkBuffers() {
-        RenderUtils.bufferOverrideMap.clear();
-    }
-
     public static int recalculateArgb(int oldArgb) {
         if (shouldRenderTranslucent(false)) {
             return ARGB.color(recalculateAlpha(ARGB.alpha(oldArgb)), ARGB.red(oldArgb), ARGB.green(oldArgb), ARGB.blue(oldArgb));
@@ -107,24 +143,17 @@ public class RenderUtils {
     }
 
     public static boolean shouldRender(boolean allowTranslucent) {
-        if (RenderUtils.currentRender == null) {
+        if (RenderUtils.targetOpacity == 1.0F) {
             return true;
         }
-        if (allowTranslucent) {
-            return RenderUtils.targetOpacity > 0.0F;
-        } else {
-            return RenderUtils.targetOpacity >= 1.0F;
-        }
+        return allowTranslucent && RenderUtils.targetOpacity > 0.0F;
     }
 
-    public static boolean shouldRenderTranslucent(boolean forceOverride) {
-        if (RenderUtils.currentRender == null) {
+    public static boolean shouldRenderTranslucent(boolean ignoreOverride) {
+        if (RenderUtils.targetOpacity == 1.0F || RenderUtils.targetOpacity == 0.0F) {
             return false;
         }
-        if (forceOverride || RenderUtils.renderOverride != RenderOverride.NONE) {
-            return RenderUtils.targetOpacity > 0.0F && RenderUtils.targetOpacity < 1.0F;
-        }
-        return false;
+        return ignoreOverride || RenderUtils.renderOverride != RenderOverride.NONE;
     }
 
     public static void withRenderOverride(Runnable callback, RenderOverride renderOverride) {

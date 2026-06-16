@@ -40,7 +40,8 @@ public class Config {
 
     private List<PlayerGroup> whitelistGroups = List.of(PlayerGroup.createDefaultGroup(1));
     private long transitionTime = 150L;
-    private double nearbyPlayerDistance = 3.0;
+    private double nearbyPlayersDistance = 4.0;
+    private double nearbyPlayersHiddenOpacity = 0.35;
 
     public List<PlayerGroup> whitelistGroups() {
         return this.whitelistGroups;
@@ -50,8 +51,12 @@ public class Config {
         return this.transitionTime;
     }
 
-    public double nearbyPlayerDistance() {
-        return this.nearbyPlayerDistance;
+    public double nearbyPlayersDistance() {
+        return this.nearbyPlayersDistance;
+    }
+
+    public double nearbyPlayersHiddenOpacity() {
+        return this.nearbyPlayersHiddenOpacity;
     }
 
     public void setWhitelistGroups(List<PlayerGroup> whitelistGroups) {
@@ -62,8 +67,12 @@ public class Config {
         this.transitionTime = transitionTime;
     }
 
-    public void setNearbyPlayerDistance(double nearbyPlayerDistance) {
-        this.nearbyPlayerDistance = nearbyPlayerDistance;
+    public void setNearbyPlayersDistance(double nearbyPlayersDistance) {
+        this.nearbyPlayersDistance = nearbyPlayersDistance;
+    }
+
+    public void setNearbyPlayersHiddenOpacity(double nearbyPlayersHiddenOpacity) {
+        this.nearbyPlayersHiddenOpacity = nearbyPlayersHiddenOpacity;
     }
 
     public void save() {
