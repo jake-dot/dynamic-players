@@ -11,7 +11,8 @@
 		"BufferSourceMixin",
 		"LevelRendererMixin",
 		"ColorAttributeMixin",
-		"RenderStateShardMixin"
+		"RenderStateShardMixin",
+		"RemotePlayerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

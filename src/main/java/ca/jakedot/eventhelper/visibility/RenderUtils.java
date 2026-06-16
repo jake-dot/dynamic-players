@@ -23,6 +23,7 @@ public class RenderUtils {
     private static final Map<BufferBuilder, RenderOverride> bufferOverrideMap = new HashMap<>();
 
     public static List<Entity> sortByRenderingOrder(List<Entity> list) {
+        RenderUtils.visibilityMap.clear();
         Map<Entity, Float> distanceMap = new HashMap<>();
         Iterator<Entity> iter = list.iterator();
         while (iter.hasNext()) {
@@ -97,7 +98,6 @@ public class RenderUtils {
     }
 
     public static void reset() {
-        RenderUtils.visibilityMap.clear();
         RenderUtils.bufferOverrideMap.clear();
     }
 
@@ -156,6 +156,10 @@ public class RenderUtils {
         return ignoreOverride || RenderUtils.renderOverride != RenderOverride.NONE;
     }
 
+    public static boolean shouldRenderPartiallyHidden() {
+        return RenderUtils.targetOpacity <= 0.5F;
+    }
+
     public static void withRenderOverride(Runnable callback, RenderOverride renderOverride) {
         if (shouldRenderTranslucent(true)) {
             RenderOverride oldValue = RenderUtils.renderOverride;
@@ -165,5 +169,14 @@ public class RenderUtils {
         } else {
             callback.run();
         }
+    }
+
+    public static void beginEntityTick(RemotePlayer entity) {
+        RenderUtils.targetOpacity = RenderUtils.visibilityMap.getOrDefault(entity, 1.0F);
+    }
+
+    public static void endEntityTick() {
+        RenderUtils.renderOverride = RenderOverride.NONE;
+        RenderUtils.targetOpacity = 1.0F;
     }
 }
