@@ -20,11 +20,14 @@ import org.spongepowered.asm.mixin.injection.At;
 public class EntityRenderDispatcherMixin {
     @WrapMethod(method = "render(Lnet/minecraft/world/entity/Entity;DDDFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/renderer/entity/EntityRenderer;)V")
     private void wrapEntireRender(Entity entity, double d, double e, double f, float g, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, EntityRenderer<?, ?> entityRenderer, Operation<Void> original) {
-        if (entity instanceof RemotePlayer) {
+        boolean playerRender = entity instanceof RemotePlayer;
+        if (playerRender) {
             RenderUtils.beginRender((RemotePlayer) entity);
         }
         original.call(entity, d, e, f, g, poseStack, multiBufferSource, i, entityRenderer);
-        RenderUtils.endRender();
+        if (playerRender) {
+            RenderUtils.endRender();
+        }
     }
 
     @WrapOperation(
