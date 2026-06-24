@@ -21,7 +21,9 @@ public class EventHelper implements ModInitializer {
 	private static Config config;
 
 	private static KeyMapping hideAllKey;
+	private static KeyMapping hideAllHoldKey;
 	private static KeyMapping hideNearKey;
+	private static KeyMapping hideNearHoldKey;
 
 	public static Config getConfig() {
 		return EventHelper.config;
@@ -32,24 +34,31 @@ public class EventHelper implements ModInitializer {
 		EventHelper.config = Config.load();
 
 		EventHelper.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_all", InputConstants.KEY_H, "key.category.event_helper", () -> true));
+		EventHelper.hideAllHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_all_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
 		EventHelper.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_near", InputConstants.KEY_K, "key.category.event_helper", () -> true));
+		EventHelper.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			while (hideAllKey.consumeClick()) {
-				VisibilityManager.toggleVisibilityAll();
+			// all player visibility
+			if (VisibilityManager.updateVisibilityAll(!EventHelper.hideAllKey.isDown())) {
 				if (VisibilityManager.playersHidden()) {
-					client.player.displayClientMessage(Component.translatable("event_helper.message.players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+					client.player.displayClientMessage(Component.translatable("event_helper.message.all_players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
 				} else {
-					client.player.displayClientMessage(Component.translatable("event_helper.message.players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+					client.player.displayClientMessage(Component.translatable("event_helper.message.all_players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
 				}
+			} else {
+				VisibilityManager.updateVisibilityAll(!EventHelper.hideAllHoldKey.isDown());
 			}
-			while (hideNearKey.consumeClick()) {
-				VisibilityManager.toggleVisibilityNear();
+
+			// near player visibility
+			if (VisibilityManager.updateVisibilityNear(!EventHelper.hideNearKey.isDown())) {
 				if (VisibilityManager.nearPlayersHidden()) {
 					client.player.displayClientMessage(Component.translatable("event_helper.message.near_players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
 				} else {
 					client.player.displayClientMessage(Component.translatable("event_helper.message.near_players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
 				}
+			} else {
+				VisibilityManager.updateVisibilityAll(!EventHelper.hideNearHoldKey.isDown());
 			}
 		});
 	}

@@ -1,7 +1,9 @@
 {
   "key.category.event_helper": "Event Helper",
   "key.event_helper.hide_players_all": "Hide Players",
+  "key.event_helper.hide_players_all_hold": "Hide Players (Hold)",
   "key.event_helper.hide_players_near": "Hide Nearby Players",
+  "key.event_helper.hide_players_near_hold": "Hide Nearby Players (Hold)",
 
   "event_helper.message.all_players_hidden": "Players: Hidden",
   "event_helper.message.all_players_shown": "Players: Visible",

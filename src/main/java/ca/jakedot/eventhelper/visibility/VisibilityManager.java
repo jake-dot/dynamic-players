@@ -3,13 +3,11 @@ package ca.jakedot.eventhelper.visibility;
 import ca.jakedot.eventhelper.EventHelper;
 import ca.jakedot.eventhelper.PlayerGroup;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 public class VisibilityManager {
     private final static Set<String> whitelist = new HashSet<>();
@@ -34,8 +32,11 @@ public class VisibilityManager {
         return VisibilityManager.nearPlayersHidden;
     }
 
-    public static void toggleVisibilityAll() {
-        VisibilityManager.allPlayersHidden = !VisibilityManager.allPlayersHidden;
+    public static boolean updateVisibilityAll(boolean visibility) {
+        if (VisibilityManager.allPlayersHidden != visibility) {
+            return false;
+        }
+        VisibilityManager.allPlayersHidden = !visibility;
         long transitionTime = EventHelper.getConfig().transitionTime();
         if (transitionTime > 0) {
             if (VisibilityManager.globalVisibilityTransition == null) {
@@ -46,12 +47,17 @@ public class VisibilityManager {
         } else {
             VisibilityManager.globalVisibilityTransition = null;
         }
+        return true;
     }
 
-    public static void toggleVisibilityNear() {
-        VisibilityManager.nearPlayersHidden = !VisibilityManager.nearPlayersHidden;
+    public static boolean updateVisibilityNear(boolean visibility) {
+        if (VisibilityManager.nearPlayersHidden != visibility) {
+            return false;
+        }
+        VisibilityManager.nearPlayersHidden = !visibility;
 
         VisibilityManager.nearVisibilityTransition = new VisibilityTransition(150L, VisibilityManager.nearPlayersHidden);
+        return true;
     }
 
     public static boolean isWhitelisted(String player) {
