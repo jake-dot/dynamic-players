@@ -9,8 +9,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.ToggleKeyMapping;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +31,8 @@ public class EventHelper implements ModInitializer {
 	public void onInitialize() {
 		EventHelper.config = Config.load();
 
-		hideAllKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_all", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "category.event_helper"));
-		hideNearKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_near", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, "category.event_helper"));
+		EventHelper.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_all", InputConstants.KEY_H, "key.category.event_helper", () -> true));
+		EventHelper.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_near", InputConstants.KEY_K, "key.category.event_helper", () -> true));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (hideAllKey.consumeClick()) {
