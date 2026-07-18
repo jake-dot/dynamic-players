@@ -42,6 +42,7 @@ public class Config {
     private long transitionTime = 150L;
     private double nearbyPlayersDistance = 4.0;
     private double nearbyPlayersHiddenOpacity = 0.35;
+    private boolean reverseRenderingOrder = false;
 
     public List<PlayerGroup> whitelistGroups() {
         return this.whitelistGroups;
@@ -59,6 +60,10 @@ public class Config {
         return this.nearbyPlayersHiddenOpacity;
     }
 
+    public boolean reverseRenderingOrder() {
+        return this.reverseRenderingOrder;
+    }
+
     public void setWhitelistGroups(List<PlayerGroup> whitelistGroups) {
         this.whitelistGroups = whitelistGroups;
     }
@@ -73,6 +78,10 @@ public class Config {
 
     public void setNearbyPlayersHiddenOpacity(double nearbyPlayersHiddenOpacity) {
         this.nearbyPlayersHiddenOpacity = nearbyPlayersHiddenOpacity;
+    }
+
+    public void setReverseRenderingOrder(boolean reverseRenderingOrder) {
+        this.reverseRenderingOrder = reverseRenderingOrder;
     }
 
     public void save() {

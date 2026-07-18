@@ -9,6 +9,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -40,8 +41,14 @@ public class RenderUtils {
         }
 
         List<Entity> sortedList = new ArrayList<>(list);
+        Comparator<Entity> comparator;
+        if (!EventHelper.getConfig().reverseRenderingOrder()) {
+            comparator = (o1, o2) -> Float.compare(distanceMap.get(o2), distanceMap.get(o1));
+        } else {
+            comparator = (o1, o2) -> Float.compare(distanceMap.get(o1), distanceMap.get(o2));
+        }
         RenderUtils.visibilityMap.keySet().stream()
-                .sorted((o1, o2) -> Float.compare(distanceMap.get(o2), distanceMap.get(o1)))
+                .sorted(comparator)
                 .forEach(sortedList::add);
         return sortedList;
     }

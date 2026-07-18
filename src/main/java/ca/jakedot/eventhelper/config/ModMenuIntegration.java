@@ -61,6 +61,12 @@ public class ModMenuIntegration implements ModMenuApi {
                 .setSaveConsumer(value -> config.setNearbyPlayersHiddenOpacity(value / 100.0))
                 .setDefaultValue(() -> (int) (defaultConfig.nearbyPlayersHiddenOpacity() * 100))
                 .build());
+
+        advancedCategory.addEntry(entryBuilder.startBooleanToggle(Component.translatable("event_helper.options.reverse_rendering_order"), config.reverseRenderingOrder())
+                .setSaveConsumer(config::setReverseRenderingOrder)
+                .setDefaultValue(defaultConfig.reverseRenderingOrder())
+                .build());
+
         return builder.build();
     }
 }
