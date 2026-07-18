@@ -40,7 +40,7 @@ public class EventHelper implements ModInitializer {
 		this.whitelistKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.toggle_whitelist", InputConstants.KEY_V, "key.category.event_helper", () -> true));
 		this.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_all", InputConstants.KEY_H, "key.category.event_helper", () -> true));
 		this.hideAllHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_all_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
-		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_near", InputConstants.KEY_K, "key.category.event_helper", () -> true));
+		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_near", InputConstants.KEY_G, "key.category.event_helper", () -> true));
 		this.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
