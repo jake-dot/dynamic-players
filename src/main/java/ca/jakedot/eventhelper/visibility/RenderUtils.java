@@ -54,7 +54,7 @@ public class RenderUtils {
             distanceConsumer.accept((float) distSqr);
         }
 
-        if (!VisibilityManager.isWhitelisted(identifier)) {
+        if (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled()) {
             VisibilityTransition transition = VisibilityManager.getTransition(identifier);
             if (transition != null) {
                 targetOpacity = transition.getOpacity();
@@ -66,7 +66,7 @@ public class RenderUtils {
             return targetOpacity;
         }
 
-        if (VisibilityManager.nearPlayersHidden()) { // && does not bypass via whitelist
+        if (VisibilityManager.nearPlayersHidden() && (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled())) {
             AbstractClientPlayer self = Minecraft.getInstance().player;
             float threshold = (float) EventHelper.getConfig().nearbyPlayersDistance(); // TODO option to auto adjust to player scale
             float transitionRange = 1.0F;

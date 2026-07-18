@@ -12,8 +12,9 @@ import java.util.Set;
 public class VisibilityManager {
     private final static Set<String> whitelist = new HashSet<>();
 
-    private static boolean allPlayersHidden;
-    private static boolean nearPlayersHidden;
+    private static boolean whitelistEnabled = true;
+    private static boolean allPlayersHidden = false;
+    private static boolean nearPlayersHidden = false;
 
     public static void updateWhitelist(List<PlayerGroup> whitelistGroups) {
         VisibilityManager.whitelist.clear();
@@ -24,12 +25,24 @@ public class VisibilityManager {
                 .forEach(VisibilityManager.whitelist::addAll);
     }
 
+    public static boolean whitelistEnabled() {
+        return VisibilityManager.whitelistEnabled;
+    }
+
     public static boolean playersHidden() {
         return VisibilityManager.allPlayersHidden;
     }
 
     public static boolean nearPlayersHidden() {
         return VisibilityManager.nearPlayersHidden;
+    }
+
+    public static boolean updateWhitelistState(boolean whitelistEnabled) {
+        if (VisibilityManager.whitelistEnabled == whitelistEnabled) {
+            return false;
+        }
+        VisibilityManager.whitelistEnabled = whitelistEnabled;
+        return true;
     }
 
     public static boolean updateVisibilityAll(boolean visibility) {
@@ -61,7 +74,7 @@ public class VisibilityManager {
     }
 
     public static boolean isWhitelisted(String player) {
-        return VisibilityManager.whitelist.contains(player); // TODO toggle whitelist
+        return VisibilityManager.whitelist.contains(player);
     }
 
     private static VisibilityTransition globalVisibilityTransition;

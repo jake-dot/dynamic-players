@@ -20,10 +20,7 @@ public class EventHelper implements ModInitializer {
 
 	private static Config config;
 
-	private static KeyMapping hideAllKey;
-	private static KeyMapping hideAllHoldKey;
-	private static KeyMapping hideNearKey;
-	private static KeyMapping hideNearHoldKey;
+	private KeyMapping whitelistKey;
 	private KeyMapping hideAllKey;
 	private KeyMapping hideAllHoldKey;
 	private KeyMapping hideNearKey;
@@ -40,16 +37,22 @@ public class EventHelper implements ModInitializer {
 	public void onInitialize() {
 		EventHelper.config = Config.load();
 
-		EventHelper.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_all", InputConstants.KEY_H, "key.category.event_helper", () -> true));
-		EventHelper.hideAllHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_all_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
-		EventHelper.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_near", InputConstants.KEY_K, "key.category.event_helper", () -> true));
-		EventHelper.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
+		this.whitelistKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.toggle_whitelist", InputConstants.KEY_V, "key.category.event_helper", () -> true));
 		this.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_all", InputConstants.KEY_H, "key.category.event_helper", () -> true));
 		this.hideAllHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_all_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
 		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.event_helper.hide_players_near", InputConstants.KEY_K, "key.category.event_helper", () -> true));
 		this.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.event_helper.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), "key.category.event_helper"));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			// whitelist
+			if (VisibilityManager.updateWhitelistState(!this.whitelistKey.isDown())) {
+				if (VisibilityManager.whitelistEnabled()) {
+					client.player.displayClientMessage(Component.translatable("event_helper.message.whitelist_enable").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+				} else {
+					client.player.displayClientMessage(Component.translatable("event_helper.message.whitelist_disable").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+				}
+			}
+
 			// all player visibility
 			VisibilityManager.updateVisibilityAll(!this.hideAllKey.isDown() && !this.hideAllHoldKey.isDown());
 			if (this.hideAllKey.isDown() && !this.wasHideAllPressed) {

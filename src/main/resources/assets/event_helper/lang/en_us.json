@@ -1,10 +1,13 @@
 {
   "key.category.event_helper": "Event Helper",
+  "key.event_helper.toggle_whitelist": "Toggle Whitelist",
   "key.event_helper.hide_players_all": "Hide Players",
   "key.event_helper.hide_players_all_hold": "Hide Players (Hold)",
   "key.event_helper.hide_players_near": "Hide Nearby Players",
   "key.event_helper.hide_players_near_hold": "Hide Nearby Players (Hold)",
 
+  "event_helper.message.whitelist_enable": "Whitelist: Enabled",
+  "event_helper.message.whitelist_disable": "Whitelist: Disabled",
   "event_helper.message.all_players_hidden": "Players: Hidden",
   "event_helper.message.all_players_shown": "Players: Visible",
   "event_helper.message.near_players_hidden": "Nearby Players: Hidden",
@@ -14,8 +17,8 @@
   "event_helper.options.category.basic": "Basic",
   "event_helper.options.category.advanced": "Advanced",
   "event_helper.options.edit_whitelist": "Edit Whitelist",
-  "event_helper.options.visibility_transition_time":  "Visibility Transition Time",
-  "event_helper.options.nearby_player_distance":  "Nearby Player Range",
+  "event_helper.options.visibility_transition_time": "Visibility Transition Time",
+  "event_helper.options.nearby_player_distance": "Nearby Player Range",
   "event_helper.options.add_player": "Add Player",
   "event_helper.options.create_group": "Create Group",
   "event_helper.options.remove_group": "Remove Group"
