@@ -270,14 +270,17 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
             super(null, listListEntry);
 
             this.addWidget = Button.builder(Component.translatable("event_helper.options.add_player"), button -> {
-                PlayerGroupCell newCell = this.createNewCell();
+                int index = (int) listListEntry.widgets.stream()
+                        .filter(widget -> widget instanceof PlayerGroupCell)
+                        .count();
+                PlayerGroupCell newCell = this.createNewCell(index);
                 AddButtonCell.this.listListEntry.cells.add(newCell);
                 AddButtonCell.this.listListEntry.widgets.add(newCell);
             }).width(80).build();
         }
 
-        private PlayerGroupCell createNewCell() {
-            return new PlayerGroupCell(PlayerGroup.getExamplePlayer(), this.listListEntry);
+        private PlayerGroupCell createNewCell(int index) {
+            return new PlayerGroupCell(PlayerGroup.getExamplePlayer(index), this.listListEntry);
         }
 
         @Override
