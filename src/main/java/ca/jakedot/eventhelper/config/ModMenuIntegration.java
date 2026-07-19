@@ -56,6 +56,12 @@ public class ModMenuIntegration implements ModMenuApi {
 
         ConfigCategory advancedCategory = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.advanced"));
 
+        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("event_helper.options.hidden_players_opacity"), 15, 0, 100)
+                .setTextGetter(value -> Component.literal(value + "%"))
+                .setSaveConsumer(value -> config.setAllPlayersHiddenOpacity(value / 100.0))
+                .setDefaultValue(() -> (int) (defaultConfig.allPlayersHiddenOpacity() * 100))
+                .build());
+
         advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("event_helper.options.nearby_players_minimum_opacity"), (int) (config.nearbyPlayersHiddenOpacity() * 100), 0, 100)
                 .setTextGetter(value -> Component.literal(value + "%"))
                 .setSaveConsumer(value -> config.setNearbyPlayersHiddenOpacity(value / 100.0))

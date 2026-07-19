@@ -62,11 +62,13 @@ public class RenderUtils {
         }
 
         if (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled()) {
+            float minOpacity = (float) EventHelper.getConfig().allPlayersHiddenOpacity();
             VisibilityTransition transition = VisibilityManager.getTransition(identifier);
             if (transition != null) {
-                targetOpacity = transition.getOpacity();
+                float rawOpacity = transition.getOpacity();
+                targetOpacity = minOpacity + rawOpacity * (1.0F - minOpacity);
             } else if (VisibilityManager.playersHidden()) {
-                targetOpacity = 0.0F;
+                targetOpacity = minOpacity;
             }
         }
         if (targetOpacity == 0.0F) {

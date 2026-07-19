@@ -19,6 +19,7 @@
   "event_helper.options.edit_whitelist": "Edit Whitelist",
   "event_helper.options.visibility_transition_time": "Visibility Transition Time",
   "event_helper.options.nearby_player_distance": "Nearby Player Range",
+  "event_helper.options.hidden_players_opacity": "Hidden Players Opacity",
   "event_helper.options.nearby_players_minimum_opacity": "Nearby Players Minimum Opacity",
   "event_helper.options.reverse_rendering_order": "Reverse Rendering Order",
   "event_helper.options.add_player": "Add Player",
