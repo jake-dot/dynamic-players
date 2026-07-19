@@ -35,28 +35,23 @@ public class ModMenuIntegration implements ModMenuApi {
                 });
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
-        ConfigCategory category = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.basic"));
+        ConfigCategory basicCategory = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.basic"));
 
-        category.addEntry(new WhitelistSubCategoryListEntry(Component.translatable("event_helper.options.edit_whitelist"), config.whitelistGroups(), config::setWhitelistGroups));
+        basicCategory.addEntry(new WhitelistSubCategoryListEntry(Component.translatable("event_helper.options.edit_whitelist"), config.whitelistGroups(), config::setWhitelistGroups));
 
-        category.addEntry(entryBuilder.startLongField(Component.translatable("event_helper.options.visibility_transition_time"), config.transitionTime())
+        basicCategory.addEntry(entryBuilder.startLongField(Component.translatable("event_helper.options.visibility_transition_time"), config.transitionTime())
                 .setSaveConsumer(config::setTransitionTime)
                 .setDefaultValue(defaultConfig::transitionTime)
                 .build());
 
-        category.addEntry(entryBuilder.startDoubleField(Component.translatable("event_helper.options.nearby_player_distance"), config.nearbyPlayersDistance())
+        basicCategory.addEntry(entryBuilder.startDoubleField(Component.translatable("event_helper.options.nearby_player_distance"), config.nearbyPlayersDistance())
                 .setSaveConsumer(config::setNearbyPlayersDistance)
                 .setDefaultValue(defaultConfig::nearbyPlayersDistance)
                 .build());
 
-//        category.addEntry(entryBuilder.startBooleanToggle(Component.translatable("event_helper.options.preserve_hitboxes"), false)
-//                .setSaveConsumer(config::savePreserveHitboxes)
-//                .setDefaultValue(Config.DEFAULT_PRESERVE_HITBOXES)
-//                .build());
-
         ConfigCategory advancedCategory = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.advanced"));
 
-        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("event_helper.options.hidden_players_opacity"), 15, 0, 100)
+        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("event_helper.options.hidden_players_opacity"), (int) (config.allPlayersHiddenOpacity() * 100), 0, 100)
                 .setTextGetter(value -> Component.literal(value + "%"))
                 .setSaveConsumer(value -> config.setAllPlayersHiddenOpacity(value / 100.0))
                 .setDefaultValue(() -> (int) (defaultConfig.allPlayersHiddenOpacity() * 100))
