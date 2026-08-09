@@ -1,8 +1,8 @@
 {
 	"required": true,
-	"package": "ca.jakedot.eventhelper.mixin",
+	"package": "ca.jakedot.hideplayers.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"plugin": "ca.jakedot.eventhelper.mixin.EventHelperMixinPlugin",
+	"plugin": "ca.jakedot.hideplayers.mixin.MixinPlugin",
 	"mixins": [
 		"BufferBuilderMixin",
 		"EquipmentLayerRendererMixin",

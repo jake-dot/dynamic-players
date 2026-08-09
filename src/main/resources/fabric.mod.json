@@ -1,25 +1,25 @@
 {
 	"schemaVersion": 1,
-	"id": "event_helper",
+	"id": "dynamic_players",
 	"version": "${version}",
-	"name": "Event Helper",
+	"name": "Dynamic Players",
 	"description": "Hide player mod",
 	"authors": [
 		"JakeDot"
 	],
 	"license": "CC0-1.0",
-	"icon": "assets/event_helper/icon.png",
+	"icon": "assets/dynamic_players/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"ca.jakedot.eventhelper.EventHelper"
+			"ca.jakedot.hideplayers.HidePlayers"
 		],
 		"modmenu": [
-			"ca.jakedot.eventhelper.config.ModMenuIntegration"
+			"ca.jakedot.hideplayers.config.ModMenuIntegration"
 		]
 	},
 	"mixins": [
-		"event_helper.mixins.json"
+		"dynamic_players.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.18.1",

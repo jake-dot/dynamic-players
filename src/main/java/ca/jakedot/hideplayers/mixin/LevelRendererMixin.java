@@ -1,7 +1,7 @@
-package ca.jakedot.eventhelper.mixin;
+package ca.jakedot.hideplayers.mixin;
 
-import ca.jakedot.eventhelper.visibility.RenderUtils;
-import ca.jakedot.eventhelper.visibility.VisibilityManager;
+import ca.jakedot.hideplayers.visibility.RenderUtils;
+import ca.jakedot.hideplayers.visibility.VisibilityManager;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.blaze3d.vertex.PoseStack;

@@ -1,7 +1,7 @@
-package ca.jakedot.eventhelper.visibility;
+package ca.jakedot.hideplayers.visibility;
 
-import ca.jakedot.eventhelper.EventHelper;
-import ca.jakedot.eventhelper.PlayerGroup;
+import ca.jakedot.hideplayers.HidePlayers;
+import ca.jakedot.hideplayers.PlayerGroup;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +50,7 @@ public class VisibilityManager {
             return false;
         }
         VisibilityManager.allPlayersHidden = !visibility;
-        long transitionTime = EventHelper.getConfig().transitionTime();
+        long transitionTime = HidePlayers.getConfig().transitionTime();
         if (transitionTime > 0) {
             if (VisibilityManager.globalVisibilityTransition == null) {
                 VisibilityManager.globalVisibilityTransition = new VisibilityTransition(transitionTime, VisibilityManager.allPlayersHidden);

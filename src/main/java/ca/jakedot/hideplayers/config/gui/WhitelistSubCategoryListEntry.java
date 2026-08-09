@@ -1,6 +1,6 @@
-package ca.jakedot.eventhelper.config.gui;
+package ca.jakedot.hideplayers.config.gui;
 
-import ca.jakedot.eventhelper.PlayerGroup;
+import ca.jakedot.hideplayers.PlayerGroup;
 import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import me.shedaniel.clothconfig2.gui.entries.SubCategoryListEntry;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,7 +21,7 @@ public class WhitelistSubCategoryListEntry extends SubCategoryListEntry {
 
     public WhitelistSubCategoryListEntry(Component categoryName, List<PlayerGroup> value, Consumer<List<PlayerGroup>> saveConsumer) {
         super(categoryName, new ArrayList<>(), false);
-        this.addWidget = Button.builder(Component.translatable("event_helper.options.create_group"), button -> {
+        this.addWidget = Button.builder(Component.translatable("dynamic_players.options.create_group"), button -> {
             this.createNewEntry(PlayerGroup.createDefaultGroup(this.getValue().size() + 1));
         }).width(80).build();
         this.getChildren().add(1, this.addWidget);

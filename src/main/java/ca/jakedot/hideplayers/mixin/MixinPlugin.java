@@ -1,4 +1,4 @@
-package ca.jakedot.eventhelper.mixin;
+package ca.jakedot.hideplayers.mixin;
 
 import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class EventHelperMixinPlugin implements IMixinConfigPlugin {
+public class MixinPlugin implements IMixinConfigPlugin {
     private final static Map<String, String> MIXIN_REQUIREMENTS = new HashMap<>();
 
     static {
-        MIXIN_REQUIREMENTS.put("ca.jakedot.eventhelper.mixin.ColorAttributeMixin", "sodium");
+        MIXIN_REQUIREMENTS.put("ca.jakedot.hideplayers.mixin.ColorAttributeMixin", "sodium");
     }
 
     @Override

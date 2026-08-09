@@ -1,0 +1,28 @@
+{
+  "key.category.dynamic_players": "Dynamic Players",
+  "key.dynamic_players.toggle_whitelist": "Toggle Whitelist",
+  "key.dynamic_players.hide_players_all": "Hide Players",
+  "key.dynamic_players.hide_players_all_hold": "Hide Players (Hold)",
+  "key.dynamic_players.hide_players_near": "Hide Nearby Players",
+  "key.dynamic_players.hide_players_near_hold": "Hide Nearby Players (Hold)",
+
+  "dynamic_players.message.whitelist_enable": "Whitelist: Enabled",
+  "dynamic_players.message.whitelist_disable": "Whitelist: Disabled",
+  "dynamic_players.message.all_players_hidden": "Players: Hidden",
+  "dynamic_players.message.all_players_shown": "Players: Visible",
+  "dynamic_players.message.near_players_hidden": "Nearby Players: Hidden",
+  "dynamic_players.message.near_players_shown": "Nearby Players: Visible",
+
+  "dynamic_players.options.title": "Dynamic Players Config",
+  "dynamic_players.options.category.basic": "Basic",
+  "dynamic_players.options.category.advanced": "Advanced",
+  "dynamic_players.options.edit_whitelist": "Edit Whitelist",
+  "dynamic_players.options.visibility_transition_time": "Visibility Transition Time",
+  "dynamic_players.options.nearby_player_distance": "Nearby Player Range",
+  "dynamic_players.options.hidden_players_opacity": "Hidden Players Opacity",
+  "dynamic_players.options.nearby_players_minimum_opacity": "Nearby Players Minimum Opacity",
+  "dynamic_players.options.reverse_rendering_order": "Reverse Rendering Order",
+  "dynamic_players.options.add_player": "Add Player",
+  "dynamic_players.options.create_group": "Create Group",
+  "dynamic_players.options.remove_group": "Remove Group"
+}

@@ -1,4 +1,4 @@
-package ca.jakedot.eventhelper.visibility;
+package ca.jakedot.hideplayers.visibility;
 
 public class VisibilityTransition {
     private final long duration;

@@ -1,6 +1,6 @@
-package ca.jakedot.eventhelper.visibility;
+package ca.jakedot.hideplayers.visibility;
 
-import ca.jakedot.eventhelper.EventHelper;
+import ca.jakedot.hideplayers.HidePlayers;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -42,7 +42,7 @@ public class RenderUtils {
 
         List<Entity> sortedList = new ArrayList<>(list);
         Comparator<Entity> comparator;
-        if (!EventHelper.getConfig().reverseRenderingOrder()) {
+        if (!HidePlayers.getConfig().reverseRenderingOrder()) {
             comparator = (o1, o2) -> Float.compare(distanceMap.get(o2), distanceMap.get(o1));
         } else {
             comparator = (o1, o2) -> Float.compare(distanceMap.get(o1), distanceMap.get(o2));
@@ -62,7 +62,7 @@ public class RenderUtils {
         }
 
         if (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled()) {
-            float minOpacity = (float) EventHelper.getConfig().allPlayersHiddenOpacity();
+            float minOpacity = (float) HidePlayers.getConfig().allPlayersHiddenOpacity();
             VisibilityTransition transition = VisibilityManager.getTransition(identifier);
             if (transition != null) {
                 float rawOpacity = transition.getOpacity();
@@ -77,11 +77,11 @@ public class RenderUtils {
 
         if (VisibilityManager.nearPlayersHidden() && (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled())) {
             AbstractClientPlayer self = Minecraft.getInstance().player;
-            float threshold = (float) EventHelper.getConfig().nearbyPlayersDistance(); // TODO option to auto adjust to player scale
+            float threshold = (float) HidePlayers.getConfig().nearbyPlayersDistance(); // TODO option to auto adjust to player scale
             float transitionRange = 1.0F;
             if (distSqr <= Math.pow(threshold, 2)) {
                 float dist = self.distanceTo(entity);
-                float minOpacity = (float) EventHelper.getConfig().nearbyPlayersHiddenOpacity();
+                float minOpacity = (float) HidePlayers.getConfig().nearbyPlayersHiddenOpacity();
                 if (dist <= threshold - transitionRange) {
                     targetOpacity = Math.min(targetOpacity, minOpacity);
                 } else if (dist < threshold) {

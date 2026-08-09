@@ -1,8 +1,8 @@
-package ca.jakedot.eventhelper.config;
+package ca.jakedot.hideplayers.config;
 
-import ca.jakedot.eventhelper.EventHelper;
-import ca.jakedot.eventhelper.config.gui.WhitelistSubCategoryListEntry;
-import ca.jakedot.eventhelper.visibility.VisibilityManager;
+import ca.jakedot.hideplayers.HidePlayers;
+import ca.jakedot.hideplayers.config.gui.WhitelistSubCategoryListEntry;
+import ca.jakedot.hideplayers.visibility.VisibilityManager;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
@@ -16,7 +16,7 @@ public class ModMenuIntegration implements ModMenuApi {
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
         if (!FabricLoader.getInstance().isModLoaded("cloth-config")) {
-            EventHelper.LOGGER.warn("Could not create config screen because Cloth Config is not loaded");
+            HidePlayers.LOGGER.warn("Could not create config screen because Cloth Config is not loaded");
             return null; // is this supposed to return null?
         }
         return this::createConfigScreen;
@@ -24,8 +24,8 @@ public class ModMenuIntegration implements ModMenuApi {
 
     private Screen createConfigScreen(Screen parent) {
         Config defaultConfig = new Config();
-        Config config = EventHelper.getConfig();
-        Component title = Component.translatable("event_helper.options.title");
+        Config config = HidePlayers.getConfig();
+        Component title = Component.translatable("dynamic_players.options.title");
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
                 .setTitle(title)
@@ -35,35 +35,35 @@ public class ModMenuIntegration implements ModMenuApi {
                 });
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
-        ConfigCategory basicCategory = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.basic"));
+        ConfigCategory basicCategory = builder.getOrCreateCategory(Component.translatable("dynamic_players.options.category.basic"));
 
-        basicCategory.addEntry(new WhitelistSubCategoryListEntry(Component.translatable("event_helper.options.edit_whitelist"), config.whitelistGroups(), config::setWhitelistGroups));
+        basicCategory.addEntry(new WhitelistSubCategoryListEntry(Component.translatable("dynamic_players.options.edit_whitelist"), config.whitelistGroups(), config::setWhitelistGroups));
 
-        basicCategory.addEntry(entryBuilder.startLongField(Component.translatable("event_helper.options.visibility_transition_time"), config.transitionTime())
+        basicCategory.addEntry(entryBuilder.startLongField(Component.translatable("dynamic_players.options.visibility_transition_time"), config.transitionTime())
                 .setSaveConsumer(config::setTransitionTime)
                 .setDefaultValue(defaultConfig::transitionTime)
                 .build());
 
-        basicCategory.addEntry(entryBuilder.startDoubleField(Component.translatable("event_helper.options.nearby_player_distance"), config.nearbyPlayersDistance())
+        basicCategory.addEntry(entryBuilder.startDoubleField(Component.translatable("dynamic_players.options.nearby_player_distance"), config.nearbyPlayersDistance())
                 .setSaveConsumer(config::setNearbyPlayersDistance)
                 .setDefaultValue(defaultConfig::nearbyPlayersDistance)
                 .build());
 
-        ConfigCategory advancedCategory = builder.getOrCreateCategory(Component.translatable("event_helper.options.category.advanced"));
+        ConfigCategory advancedCategory = builder.getOrCreateCategory(Component.translatable("dynamic_players.options.category.advanced"));
 
-        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("event_helper.options.hidden_players_opacity"), (int) (config.allPlayersHiddenOpacity() * 100), 0, 100)
+        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("dynamic_players.options.hidden_players_opacity"), (int) (config.allPlayersHiddenOpacity() * 100), 0, 100)
                 .setTextGetter(value -> Component.literal(value + "%"))
                 .setSaveConsumer(value -> config.setAllPlayersHiddenOpacity(value / 100.0))
                 .setDefaultValue(() -> (int) (defaultConfig.allPlayersHiddenOpacity() * 100))
                 .build());
 
-        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("event_helper.options.nearby_players_minimum_opacity"), (int) (config.nearbyPlayersHiddenOpacity() * 100), 0, 100)
+        advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("dynamic_players.options.nearby_players_minimum_opacity"), (int) (config.nearbyPlayersHiddenOpacity() * 100), 0, 100)
                 .setTextGetter(value -> Component.literal(value + "%"))
                 .setSaveConsumer(value -> config.setNearbyPlayersHiddenOpacity(value / 100.0))
                 .setDefaultValue(() -> (int) (defaultConfig.nearbyPlayersHiddenOpacity() * 100))
                 .build());
 
-        advancedCategory.addEntry(entryBuilder.startBooleanToggle(Component.translatable("event_helper.options.reverse_rendering_order"), config.reverseRenderingOrder())
+        advancedCategory.addEntry(entryBuilder.startBooleanToggle(Component.translatable("dynamic_players.options.reverse_rendering_order"), config.reverseRenderingOrder())
                 .setSaveConsumer(config::setReverseRenderingOrder)
                 .setDefaultValue(defaultConfig.reverseRenderingOrder())
                 .build());

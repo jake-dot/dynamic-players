@@ -1,7 +1,7 @@
-package ca.jakedot.eventhelper.config;
+package ca.jakedot.hideplayers.config;
 
-import ca.jakedot.eventhelper.PlayerGroup;
-import ca.jakedot.eventhelper.visibility.VisibilityManager;
+import ca.jakedot.hideplayers.PlayerGroup;
+import ca.jakedot.hideplayers.visibility.VisibilityManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class Config {
-    private final static String CONFIG_NAME = "selective_players.json";
+    private final static String CONFIG_NAME = "dynamic_players.json";
     private final static Gson GSON;
 
     static {

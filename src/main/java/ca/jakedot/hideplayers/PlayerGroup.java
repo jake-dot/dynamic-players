@@ -1,4 +1,4 @@
-package ca.jakedot.eventhelper;
+package ca.jakedot.hideplayers;
 
 import java.util.Arrays;
 import java.util.Collections;

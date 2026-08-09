@@ -1,6 +1,6 @@
-package ca.jakedot.eventhelper.mixin;
+package ca.jakedot.hideplayers.mixin;
 
-import ca.jakedot.eventhelper.visibility.RenderUtils;
+import ca.jakedot.hideplayers.visibility.RenderUtils;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

@@ -1,6 +1,6 @@
-package ca.jakedot.eventhelper.config.gui;
+package ca.jakedot.hideplayers.config.gui;
 
-import ca.jakedot.eventhelper.PlayerGroup;
+import ca.jakedot.hideplayers.PlayerGroup;
 import me.shedaniel.clothconfig2.gui.ClothConfigScreen;
 import me.shedaniel.clothconfig2.gui.entries.AbstractListListEntry;
 import me.shedaniel.clothconfig2.gui.widget.DynamicEntryListWidget;
@@ -61,7 +61,7 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
             }
         }).size(18, 18).build();
         this.toggleWidget.setAlpha(0f);
-        this.removeWidget = Button.builder(Component.translatable("event_helper.options.remove_group"), button -> {
+        this.removeWidget = Button.builder(Component.translatable("dynamic_players.options.remove_group"), button -> {
             if (removeConfirmationTimestamp == 0) {
                 removeConfirmationTimestamp = System.currentTimeMillis();
                 button.setMessage(button.getMessage().copy().withStyle(ChatFormatting.RED));
@@ -269,7 +269,7 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
         public AddButtonCell(PlayerGroupListEntry listListEntry) {
             super(null, listListEntry);
 
-            this.addWidget = Button.builder(Component.translatable("event_helper.options.add_player"), button -> {
+            this.addWidget = Button.builder(Component.translatable("dynamic_players.options.add_player"), button -> {
                 int index = (int) listListEntry.widgets.stream()
                         .filter(widget -> widget instanceof PlayerGroupCell)
                         .count();

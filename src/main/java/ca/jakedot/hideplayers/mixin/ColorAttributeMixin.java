@@ -1,6 +1,6 @@
-package ca.jakedot.eventhelper.mixin;
+package ca.jakedot.hideplayers.mixin;
 
-import ca.jakedot.eventhelper.visibility.RenderUtils;
+import ca.jakedot.hideplayers.visibility.RenderUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
