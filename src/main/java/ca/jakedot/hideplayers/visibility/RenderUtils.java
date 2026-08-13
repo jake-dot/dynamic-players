@@ -202,11 +202,11 @@ public class RenderUtils {
         String name;
         RenderSetup renderSetup;
         try {
-            Field field = renderType.getClass().getDeclaredField("name");
+            Field field = renderType.getClass().getDeclaredField("field_64011");
             field.setAccessible(true);
             name = (String) field.get(renderType);
 
-            field = renderType.getClass().getDeclaredField("state");
+            field = renderType.getClass().getDeclaredField("field_64013");
             field.setAccessible(true);
             renderSetup = (RenderSetup) field.get(renderType);
         } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -238,20 +238,8 @@ public class RenderUtils {
         if (oldSetupAccessor.dynamic_players$isSortOnUpload()) {
             builder.sortOnUpload();
         }
-        for (Map.Entry<String, ?> entry : oldSetupAccessor.dynamic_players$getTextures().entrySet()) {
-            Identifier location;
-            Supplier<GpuSampler> sampler;
-            try {
-                Field field = entry.getValue().getClass().getDeclaredField("location");
-                location = (Identifier) field.get(entry.getValue());
-                field.setAccessible(true);
-                field = entry.getValue().getClass().getDeclaredField("sampler");
-                field.setAccessible(true);
-                sampler = (Supplier<GpuSampler>) field.get(entry.getValue());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            builder.withTexture(entry.getKey(), location, sampler);
+        for (Map.Entry<String, RenderSetup.TextureBinding> entry : oldSetupAccessor.dynamic_players$getTextures().entrySet()) {
+            builder.withTexture(entry.getKey(), entry.getValue().location(), entry.getValue().sampler());
         }
         return builder.createRenderSetup();
     }

@@ -21,6 +21,7 @@
 	"mixins": [
 		"dynamic_players.mixins.json"
 	],
+	"accessWidener": "dynamic_players.classtweaker",
 	"depends": {
 		"fabricloader": ">=0.19.3",
 		"minecraft": "~1.21.11",

@@ -16,7 +16,7 @@ public interface RenderSetupAccessor {
     RenderPipeline dynamic_players$getRenderPipeline();
 
     @Accessor("textures")
-    Map<String, ?> dynamic_players$getTextures();
+    Map<String, RenderSetup.TextureBinding> dynamic_players$getTextures();
 
     @Accessor("outputTarget")
     OutputTarget dynamic_players$getOutputTarget();
