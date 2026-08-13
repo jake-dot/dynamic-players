@@ -6,6 +6,7 @@ import ca.jakedot.hideplayers.PlayerGroup;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,7 +23,9 @@ public class VisibilityManager {
                 .stream()
                 .filter(PlayerGroup::enabled)
                 .map(PlayerGroup::players)
-                .forEach(VisibilityManager.whitelist::addAll);
+                .forEach(group -> {
+                    group.forEach(player -> whitelist.add(player.toLowerCase(Locale.ROOT)));
+                });
     }
 
     public static boolean whitelistEnabled() {
@@ -74,6 +77,7 @@ public class VisibilityManager {
     }
 
     public static boolean isWhitelisted(String player) {
+        player = player.toLowerCase(Locale.ROOT);
         return VisibilityManager.whitelist.contains(player);
     }
 
