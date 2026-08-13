@@ -46,6 +46,10 @@ public class HidePlayers implements ModInitializer {
 		this.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), category));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (client.player == null) {
+				return;
+			}
+
 			// whitelist
 			if (VisibilityManager.updateWhitelistState(!this.whitelistKey.isDown())) {
 				if (VisibilityManager.whitelistEnabled()) {
