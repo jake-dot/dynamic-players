@@ -48,7 +48,7 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
         this.nameWidget.setValue(value.name());
         this.nameWidget.moveCursorToStart(false);
         this.nameWidget.setHint(fieldName);
-        this.nameWidget.setFormatter((string, firstCharacterIndex) -> FormattedCharSequence.forward(
+        this.nameWidget.addFormatter((string, firstCharacterIndex) -> FormattedCharSequence.forward(
                 string, Style.EMPTY.withItalic(this.isEdited())
         ));
         this.enabled = value.enabled();
@@ -60,7 +60,6 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
                 button.setMessage(UNCHECKED_BOX);
             }
         }).size(18, 18).build();
-        this.toggleWidget.setAlpha(0f);
         this.removeWidget = Button.builder(Component.translatable("dynamic_players.options.remove_group"), button -> {
             if (removeConfirmationTimestamp == 0) {
                 removeConfirmationTimestamp = System.currentTimeMillis();
@@ -102,7 +101,8 @@ public class PlayerGroupListEntry extends AbstractListListEntry<String, PlayerGr
 
         this.toggleWidget.setX(x + 1);
         this.toggleWidget.setY(y + 1);
-        this.toggleWidget.render(graphics, mouseX, mouseY, delta);
+//        this.toggleWidget.render(graphics, mouseX, mouseY, delta);
+        graphics.textRenderer().accept(toggleWidget.getX() + 5, toggleWidget.getY() + 5, toggleWidget.getMessage()); // this SUCKSSSSS
 
         String text = this.nameWidget.getValue().isEmpty() ? this.getFieldName().getString() : this.nameWidget.getValue();
         int underlineWidth = Minecraft.getInstance().font.width(text);

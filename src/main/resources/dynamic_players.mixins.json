@@ -2,17 +2,14 @@
 	"required": true,
 	"package": "ca.jakedot.hideplayers.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"plugin": "ca.jakedot.hideplayers.mixin.MixinPlugin",
 	"mixins": [
-		"BufferBuilderMixin",
 		"EquipmentLayerRendererMixin",
 		"EntityRenderDispatcherMixin",
-		"EntityRendererMixin",
-		"BufferSourceMixin",
 		"LevelRendererMixin",
-		"ColorAttributeMixin",
-		"RenderStateShardMixin",
-		"RemotePlayerMixin"
+		"RemotePlayerMixin",
+		"ClientLevelMixin",
+		"SubmitNodeCollectionMixin",
+		"RenderSetupAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

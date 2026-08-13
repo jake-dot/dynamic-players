@@ -1,38 +1,59 @@
 package ca.jakedot.hideplayers.visibility;
 
 import ca.jakedot.hideplayers.HidePlayers;
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import ca.jakedot.hideplayers.mixin.RenderSetupAccessor;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.textures.GpuSampler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.lang.reflect.Field;
+import java.util.AbstractMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class RenderUtils {
     private static RenderOverride renderOverride = RenderOverride.NONE;
     private static float targetOpacity = 1.0F;
 
+    private static final Map<EntityRenderState, Entity> entityMap = new HashMap<>();
     private static final Map<Entity, Float> visibilityMap = new HashMap<>();
-    private static final Map<BufferBuilder, RenderOverride> bufferOverrideMap = new HashMap<>();
 
-    public static List<Entity> sortByRenderingOrder(List<Entity> list) {
+    public static void storeEntity(Entity entity, EntityRenderState entityRenderState) {
+        RenderUtils.entityMap.put(entityRenderState, entity);
+    }
+
+    public static Entity getEntity(EntityRenderState entityRenderState) {
+        return RenderUtils.entityMap.get(entityRenderState);
+    }
+
+    public static void sortByRenderingOrder(List<EntityRenderState> list) {
         RenderUtils.visibilityMap.clear();
-        Map<Entity, Float> distanceMap = new HashMap<>();
-        Iterator<Entity> iter = list.iterator();
+        Map<EntityRenderState, Float> distanceMap = new HashMap<>();
+        Iterator<EntityRenderState> iter = list.iterator();
         while (iter.hasNext()) {
-            Entity entity = iter.next();
+            EntityRenderState entityRenderState = iter.next();
+            Entity entity = RenderUtils.entityMap.get(entityRenderState);
             if (!(entity instanceof RemotePlayer)) {
                 continue;
             }
-            float opacity = RenderUtils.getVisibility((RemotePlayer) entity, distance -> distanceMap.put(entity, distance));
+            float opacity = RenderUtils.getVisibility((RemotePlayer) entity, distance -> distanceMap.put(entityRenderState, distance));
             if (opacity == 1.0F) {
                 continue;
             }
@@ -40,21 +61,21 @@ public class RenderUtils {
             iter.remove();
         }
 
-        List<Entity> sortedList = new ArrayList<>(list);
-        Comparator<Entity> comparator;
+        Consumer<EntityRenderState> addConsumer;
         if (!HidePlayers.getConfig().reverseRenderingOrder()) {
-            comparator = (o1, o2) -> Float.compare(distanceMap.get(o2), distanceMap.get(o1));
+            addConsumer = list::add;
         } else {
-            comparator = (o1, o2) -> Float.compare(distanceMap.get(o1), distanceMap.get(o2));
+            addConsumer = list::addFirst;
         }
-        RenderUtils.visibilityMap.keySet().stream()
-                .sorted(comparator)
-                .forEach(sortedList::add);
-        return sortedList;
+        distanceMap.keySet().stream()
+                .filter(entityRenderState -> RenderUtils.entityMap.containsKey(entityRenderState) && RenderUtils.visibilityMap.containsKey(RenderUtils.entityMap.get(entityRenderState)))
+                .filter(entityRenderState -> RenderUtils.visibilityMap.get(RenderUtils.entityMap.get(entityRenderState)) != 1.0F)
+                .sorted((o1, o2) -> Float.compare(distanceMap.get(o2), distanceMap.get(o1)))
+                .forEach(addConsumer);
     }
 
     private static float getVisibility(RemotePlayer entity, Consumer<Float> distanceConsumer) {
-        String identifier = entity.getGameProfile().getName();
+        String identifier = entity.getGameProfile().name();
         float targetOpacity = 1.0F;
         double distSqr = Minecraft.getInstance().player.distanceToSqr(entity);
         if (distanceConsumer != null) {
@@ -107,7 +128,7 @@ public class RenderUtils {
     }
 
     public static void reset() {
-        RenderUtils.bufferOverrideMap.clear();
+        RenderUtils.entityMap.clear();
     }
 
     public static RenderOverride getRenderOverride() {
@@ -120,21 +141,6 @@ public class RenderUtils {
 
     public static int getTargetAlpha() {
         return (int) (255 * getTargetOpacity());
-    }
-
-    public static void markBuffer(BufferBuilder bufferBuilder) {
-        if (RenderUtils.renderOverride != RenderOverride.NONE) {
-            RenderOverride existingOverride = RenderUtils.bufferOverrideMap.getOrDefault(bufferBuilder, RenderOverride.NONE);
-            if (RenderUtils.renderOverride.ordinal() > existingOverride.ordinal()) {
-                RenderUtils.bufferOverrideMap.put(bufferBuilder, RenderUtils.renderOverride);
-            }
-        }
-    }
-
-    public static RenderOverride consumeBufferOverride(BufferBuilder bufferBuilder) {
-        RenderOverride bufferOverride = RenderUtils.bufferOverrideMap.getOrDefault(bufferBuilder, RenderOverride.NONE);
-        RenderUtils.bufferOverrideMap.remove(bufferBuilder);
-        return bufferOverride;
     }
 
     public static int recalculateArgb(int oldArgb) {
@@ -187,5 +193,111 @@ public class RenderUtils {
     public static void endEntityTick() {
         RenderUtils.renderOverride = RenderOverride.NONE;
         RenderUtils.targetOpacity = 1.0F;
+    }
+
+    public static RenderType modifyRenderType(RenderType renderType) {
+        if (!RenderUtils.shouldRenderTranslucent(false)) {
+            return renderType;
+        }
+        String name;
+        RenderSetup renderSetup;
+        try {
+            Field field = renderType.getClass().getDeclaredField("name");
+            field.setAccessible(true);
+            name = (String) field.get(renderType);
+
+            field = renderType.getClass().getDeclaredField("state");
+            field.setAccessible(true);
+            renderSetup = (RenderSetup) field.get(renderType);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        RenderSetup newRenderSetup = RenderUtils.modifyRenderSetup(renderSetup, RenderUtils.getRenderOverride());
+        return RenderType.create(HidePlayers.MOD_ID + "$" + name, newRenderSetup);
+    }
+
+    private static RenderSetup modifyRenderSetup(RenderSetup oldRenderSetup, RenderOverride renderOverride) {
+        RenderSetupAccessor oldSetupAccessor = (RenderSetupAccessor) (Object) oldRenderSetup;
+        RenderPipeline newPipeline = RenderUtils.modifyRenderPipeline(oldSetupAccessor.dynamic_players$getRenderPipeline(), renderOverride);
+        RenderSetup.RenderSetupBuilder builder = RenderSetup.builder(newPipeline)
+                .setOutputTarget(oldSetupAccessor.dynamic_players$getOutputTarget())
+                .setTextureTransform(oldSetupAccessor.dynamic_players$getTextureTransform())
+                .setOutline(oldSetupAccessor.dynamic_players$getOutlineProperty())
+                .setLayeringTransform(oldSetupAccessor.dynamic_players$getLayeringTransform())
+                .bufferSize(oldSetupAccessor.dynamic_players$getBufferSize());
+
+        if (oldSetupAccessor.dynamic_players$isUseLightmap()) {
+            builder.useLightmap();
+        }
+        if (oldSetupAccessor.dynamic_players$isUseOverlay()) {
+            builder.useOverlay();
+        }
+        if (oldSetupAccessor.dynamic_players$isAffectsCrumbling()) {
+            builder.affectsCrumbling();
+        }
+        if (oldSetupAccessor.dynamic_players$isSortOnUpload()) {
+            builder.sortOnUpload();
+        }
+        for (Map.Entry<String, ?> entry : oldSetupAccessor.dynamic_players$getTextures().entrySet()) {
+            Identifier location;
+            Supplier<GpuSampler> sampler;
+            try {
+                Field field = entry.getValue().getClass().getDeclaredField("location");
+                location = (Identifier) field.get(entry.getValue());
+                field.setAccessible(true);
+                field = entry.getValue().getClass().getDeclaredField("sampler");
+                field.setAccessible(true);
+                sampler = (Supplier<GpuSampler>) field.get(entry.getValue());
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+            builder.withTexture(entry.getKey(), location, sampler);
+        }
+        return builder.createRenderSetup();
+    }
+
+    private static RenderPipeline modifyRenderPipeline(RenderPipeline oldPipeline, RenderOverride renderOverride) {
+        Map<String, String> shaderDefineValues = oldPipeline.getShaderDefines().values();
+        Set<String> shaderDefineFlags = oldPipeline.getShaderDefines().flags();
+
+        RenderPipeline.Builder builder = RenderPipeline.builder()
+                .withLocation(oldPipeline.getLocation())
+                .withVertexShader(oldPipeline.getVertexShader())
+                .withFragmentShader(oldPipeline.getFragmentShader());
+        shaderDefineValues.entrySet().stream()
+                .map(entry -> {
+                    try {
+                        return new AbstractMap.SimpleEntry<>(entry.getKey(), Float.parseFloat(entry.getValue()));
+                    } catch (NumberFormatException ignored) {}
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .forEach(entry -> builder.withShaderDefine(entry.getKey(), entry.getValue()));
+        shaderDefineFlags.forEach(builder::withShaderDefine);
+        oldPipeline.getSamplers().forEach(builder::withSampler);
+        oldPipeline.getUniforms().forEach(uniform -> {
+            if (uniform.textureFormat() == null) {
+                builder.withUniform(uniform.name(), uniform.type());
+            } else {
+                builder.withUniform(uniform.name(), uniform.type(), uniform.textureFormat());
+            }
+        });
+        builder
+                .withDepthTestFunction(oldPipeline.getDepthTestFunction())
+                .withPolygonMode(oldPipeline.getPolygonMode())
+                .withColorWrite(oldPipeline.isWriteColor(), oldPipeline.isWriteAlpha())
+                .withDepthWrite(oldPipeline.isWriteDepth())
+                .withColorLogic(oldPipeline.getColorLogic())
+                .withVertexFormat(oldPipeline.getVertexFormat(), oldPipeline.getVertexFormatMode())
+                .withDepthBias(oldPipeline.getDepthBiasScaleFactor(), oldPipeline.getDepthBiasConstant());
+        if (renderOverride.overridesTransparency()) {
+            builder.withBlend(BlendFunction.TRANSLUCENT);
+        }
+        if (renderOverride.shouldCull() != null) {
+            builder.withCull(renderOverride.shouldCull());
+        } else {
+            builder.withCull(oldPipeline.isCull());
+        }
+        return builder.build();
     }
 }

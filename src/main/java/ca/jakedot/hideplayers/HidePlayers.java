@@ -11,6 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.ToggleKeyMapping;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,11 +38,12 @@ public class HidePlayers implements ModInitializer {
 	public void onInitialize() {
 		HidePlayers.config = Config.load();
 
-		this.whitelistKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.toggle_whitelist", InputConstants.KEY_V, "key.category.dynamic_players", () -> true));
-		this.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.hide_players_all", InputConstants.KEY_H, "key.category.dynamic_players", () -> true));
-		this.hideAllHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_all_hold", InputConstants.UNKNOWN.getValue(), "key.category.dynamic_players"));
-		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.hide_players_near", InputConstants.KEY_G, "key.category.dynamic_players", () -> true));
-		this.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), "key.category.dynamic_players"));
+		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "dynamic_players"));
+		this.whitelistKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.toggle_whitelist", InputConstants.KEY_V, category, () -> true, true));
+		this.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.hide_players_all", InputConstants.KEY_H, category, () -> true, true));
+		this.hideAllHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_all_hold", InputConstants.UNKNOWN.getValue(), category));
+		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.hide_players_near", InputConstants.KEY_G, category, () -> true, true));
+		this.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), category));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			// whitelist

@@ -6,6 +6,7 @@ import me.shedaniel.clothconfig2.gui.entries.SubCategoryListEntry;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 import java.lang.reflect.Field;
@@ -50,16 +51,6 @@ public class WhitelistSubCategoryListEntry extends SubCategoryListEntry {
                 }
             }
         }
-    }
-
-    // temporary fix for MC-259387
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        boolean bl = super.mouseClicked(mouseX, mouseY, button);
-        if (bl && button == 0 && this.addWidget.isMouseOver(mouseX, mouseY)) {
-            this.addWidget.setFocused(false);
-        }
-        return bl;
     }
 
     @Override

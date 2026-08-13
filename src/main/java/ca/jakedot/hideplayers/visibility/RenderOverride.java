@@ -1,23 +1,24 @@
 package ca.jakedot.hideplayers.visibility;
 
 public enum RenderOverride {
-    NONE(false, true),
-    TRANSLUCENT(true, false),
-    TRANSLUCENT_NO_CULL(true, true);
+    NONE(false, null),
+    TRANSLUCENT(true, null),
+    TRANSLUCENT_CULL(true, true),
+    TRANSLUCENT_NO_CULL(true, false);
 
     private final boolean overrideTransparency;
-    private final boolean noCull;
+    private final Boolean shouldCull;
 
-    RenderOverride(boolean overrideTransparency, boolean noCull) {
+    RenderOverride(boolean overrideTransparency, Boolean shouldCull) {
         this.overrideTransparency = overrideTransparency;
-        this.noCull = noCull;
+        this.shouldCull = shouldCull;
     }
 
     public boolean overridesTransparency() {
         return this.overrideTransparency;
     }
 
-    public boolean noCull() {
-        return noCull;
+    public Boolean shouldCull() {
+        return shouldCull;
     }
 }
