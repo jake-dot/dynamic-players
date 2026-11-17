@@ -45,33 +45,29 @@ public class SubmitNodeCollectionMixin {
     private void modifyItemSubmit(PoseStack poseStack, ItemDisplayContext itemDisplayContext, int i, int j, int k, int[] is, List<BakedQuad> list, RenderType renderType, ItemStackRenderState.FoilType foilType, Operation<Void> original) {
         if (RenderUtils.shouldRenderTranslucent(false)) {
             boolean extraTint = false;
-            List<BakedQuad> newList = new ArrayList<>();
+            List<BakedQuad> newQuads = new ArrayList<>();
             for (BakedQuad quad : list) {
                 if (quad.isTinted()) {
-                    newList.add(quad);
+                    newQuads.add(quad);
                 } else {
-                    newList.add(new BakedQuad(quad.position0(), quad.position1(), quad.position2(), quad.position3(),
-                            quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(), list.size(),
+                    newQuads.add(new BakedQuad(quad.position0(), quad.position1(), quad.position2(), quad.position3(),
+                            quad.packedUV0(), quad.packedUV1(), quad.packedUV2(), quad.packedUV3(), is.length,
                             quad.direction(), quad.sprite(), quad.shade(), quad.lightEmission()));
                     extraTint = true;
                 }
             }
-            list = newList;
-            for (int i0 = 0; i0 < is.length; i0++) {
-                is[i0] = RenderUtils.recalculateArgb(is[i0]);
-            }
-            int listSize = list.size();
+            list = newQuads;
+            int[] newTints;
             if (extraTint) {
-                listSize++;
+                newTints = new int[is.length + 1];
+                newTints[is.length] = ARGB.white(RenderUtils.getTargetOpacity());
+            } else {
+                newTints = new int[is.length];
             }
-            if (is.length < listSize) {
-                int[] array = Arrays.copyOf(is, listSize);
-                int value = ARGB.white(RenderUtils.getTargetOpacity());
-                for (int i0 = is.length; i0< array.length; i0++) {
-                    array[i0] = value;
-                }
-                is = array;
+            for (int ii = 0; ii < is.length; ii++) {
+                newTints[ii] = RenderUtils.recalculateArgb(is[ii]);
             }
+            is = newTints;
         }
         original.call(poseStack, itemDisplayContext, i, j, k, is, list, renderType, foilType);
     }
