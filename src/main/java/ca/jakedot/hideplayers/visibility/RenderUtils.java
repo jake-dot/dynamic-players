@@ -27,14 +27,14 @@ public class RenderUtils {
     private static RenderOverride renderOverride = RenderOverride.NONE;
     private static float targetOpacity = 1.0F;
 
-    private static final Map<EntityRenderState, Entity> entityMap = new HashMap<>();
-    private static final Map<Entity, Float> visibilityMap = new HashMap<>();
+    private static final Map<EntityRenderState, RemotePlayer> entityMap = new HashMap<>();
+    public static final Map<RemotePlayer, Float> visibilityMap = new HashMap<>();
 
-    public static void storeEntity(Entity entity, EntityRenderState entityRenderState) {
+    public static void storeEntity(RemotePlayer entity, EntityRenderState entityRenderState) {
         RenderUtils.entityMap.put(entityRenderState, entity);
     }
 
-    public static Entity getEntity(EntityRenderState entityRenderState) {
+    public static RemotePlayer getEntity(EntityRenderState entityRenderState) {
         return RenderUtils.entityMap.get(entityRenderState);
     }
 
@@ -44,8 +44,8 @@ public class RenderUtils {
         Iterator<EntityRenderState> iter = list.iterator();
         while (iter.hasNext()) {
             EntityRenderState entityRenderState = iter.next();
-            Entity entity = RenderUtils.entityMap.get(entityRenderState);
-            if (!(entity instanceof RemotePlayer)) {
+            RemotePlayer entity = RenderUtils.entityMap.get(entityRenderState);
+            if (entity == null) {
                 continue;
             }
             float opacity = RenderUtils.getVisibility((RemotePlayer) entity, distance -> distanceMap.put(entityRenderState, distance));

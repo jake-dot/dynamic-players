@@ -20,10 +20,10 @@ import org.spongepowered.asm.mixin.injection.At;
 public class EntityRenderDispatcherMixin {
     @WrapMethod(method = "submit")
     private void wrapEntireRender(EntityRenderState entityRenderState, CameraRenderState cameraRenderState, double d, double e, double f, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, Operation<Void> original) {
-        Entity entity = RenderUtils.getEntity(entityRenderState);
-        boolean playerRender = entity instanceof RemotePlayer;
+        RemotePlayer entity = RenderUtils.getEntity(entityRenderState);
+        boolean playerRender = entity != null;
         if (playerRender) {
-            RenderUtils.beginRender((RemotePlayer) entity);
+            RenderUtils.beginRender(entity);
         }
         original.call(entityRenderState, cameraRenderState, d, e, f, poseStack, submitNodeCollector);
         if (playerRender) {
@@ -46,7 +46,9 @@ public class EntityRenderDispatcherMixin {
     @WrapMethod(method = "extractEntity")
     private EntityRenderState captureEntity(Entity entity, float f, Operation<EntityRenderState> original) {
         EntityRenderState entityRenderState = original.call(entity, f);
-        RenderUtils.storeEntity(entity, entityRenderState);
+        if (entity instanceof RemotePlayer remotePlayer) {
+            RenderUtils.storeEntity(remotePlayer, entityRenderState);
+        }
         return entityRenderState;
     }
 }
