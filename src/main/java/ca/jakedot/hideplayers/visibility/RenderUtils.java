@@ -4,29 +4,24 @@ import ca.jakedot.hideplayers.HidePlayers;
 import ca.jakedot.hideplayers.mixin.RenderSetupAccessor;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.textures.GpuSampler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.RemotePlayer;
-import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 
 import java.lang.reflect.Field;
 import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class RenderUtils {
     private static RenderOverride renderOverride = RenderOverride.NONE;
@@ -88,7 +83,7 @@ public class RenderUtils {
             if (transition != null) {
                 float rawOpacity = transition.getOpacity();
                 targetOpacity = minOpacity + rawOpacity * (1.0F - minOpacity);
-            } else if (VisibilityManager.playersHidden()) {
+            } else if (!VisibilityManager.visibilityAll()) {
                 targetOpacity = minOpacity;
             }
         }
@@ -96,7 +91,7 @@ public class RenderUtils {
             return targetOpacity;
         }
 
-        if (VisibilityManager.nearPlayersHidden() && (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled())) {
+        if (!VisibilityManager.visibilityNear() && (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled())) {
             AbstractClientPlayer self = Minecraft.getInstance().player;
             float threshold = (float) HidePlayers.getConfig().nearbyPlayersDistance(); // TODO option to auto adjust to player scale
             float transitionRange = 1.0F;

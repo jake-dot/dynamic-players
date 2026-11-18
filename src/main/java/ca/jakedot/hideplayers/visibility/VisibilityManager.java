@@ -14,8 +14,8 @@ public class VisibilityManager {
     private final static Set<String> whitelist = new HashSet<>();
 
     private static boolean whitelistEnabled = true;
-    private static boolean allPlayersHidden = false;
-    private static boolean nearPlayersHidden = false;
+    private static boolean visibilityAll = true;
+    private static boolean visibilityNear = true;
 
     public static void updateWhitelist(List<PlayerGroup> whitelistGroups) {
         VisibilityManager.whitelist.clear();
@@ -31,12 +31,12 @@ public class VisibilityManager {
         return VisibilityManager.whitelistEnabled;
     }
 
-    public static boolean playersHidden() {
-        return VisibilityManager.allPlayersHidden;
+    public static boolean visibilityAll() {
+        return VisibilityManager.visibilityAll;
     }
 
-    public static boolean nearPlayersHidden() {
-        return VisibilityManager.nearPlayersHidden;
+    public static boolean visibilityNear() {
+        return VisibilityManager.visibilityNear;
     }
 
     public static boolean updateWhitelistState(boolean whitelistEnabled) {
@@ -47,31 +47,30 @@ public class VisibilityManager {
         return true;
     }
 
-    public static boolean updateVisibilityAll(boolean visibility) {
-        if (VisibilityManager.allPlayersHidden != visibility) {
-            return false;
+    public static void updateVisibilityAll(boolean visibility) {
+        if (VisibilityManager.visibilityAll == visibility) {
+            return;
         }
-        VisibilityManager.allPlayersHidden = !visibility;
+        VisibilityManager.visibilityAll = visibility;
         long transitionTime = HidePlayers.getConfig().transitionTime();
         if (transitionTime > 0) {
             if (VisibilityManager.globalVisibilityTransition == null) {
-                VisibilityManager.globalVisibilityTransition = new VisibilityTransition(transitionTime, VisibilityManager.allPlayersHidden);
+                VisibilityManager.globalVisibilityTransition = new VisibilityTransition(transitionTime, !visibility);
             } else {
                 VisibilityManager.globalVisibilityTransition = VisibilityManager.globalVisibilityTransition.reverse(); // TODO make this adapt to different durations
             }
         } else {
             VisibilityManager.globalVisibilityTransition = null;
         }
-        return true;
     }
 
     public static boolean updateVisibilityNear(boolean visibility) {
-        if (VisibilityManager.nearPlayersHidden != visibility) {
+        if (VisibilityManager.visibilityNear == visibility) {
             return false;
         }
-        VisibilityManager.nearPlayersHidden = !visibility;
+        VisibilityManager.visibilityNear = visibility;
 
-        VisibilityManager.nearVisibilityTransition = new VisibilityTransition(150L, VisibilityManager.nearPlayersHidden);
+        VisibilityManager.nearVisibilityTransition = new VisibilityTransition(150L, !visibility);
         return true;
     }
 

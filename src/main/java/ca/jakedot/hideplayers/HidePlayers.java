@@ -9,7 +9,9 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.ToggleKeyMapping;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
@@ -19,16 +21,16 @@ public class HidePlayers implements ModInitializer {
 	public static final String MOD_ID = "dynamic_players";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	private final static long KEY_HELD_THRESHOLD = 300L;
+
 	private static Config config;
 
 	private KeyMapping whitelistKey;
 	private KeyMapping hideAllKey;
-	private KeyMapping hideAllHoldKey;
 	private KeyMapping hideNearKey;
-	private KeyMapping hideNearHoldKey;
 
-	private boolean wasHideAllPressed;
-	private boolean wasHideNearPressed;
+	private long hideAllKeyTimestamp;
+	private long hideNearKeyTimestamp;
 
 	public static Config getConfig() {
 		return HidePlayers.config;
@@ -40,10 +42,8 @@ public class HidePlayers implements ModInitializer {
 
 		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "dynamic_players"));
 		this.whitelistKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.toggle_whitelist", InputConstants.KEY_V, category, () -> true, true));
-		this.hideAllKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.hide_players_all", InputConstants.KEY_H, category, () -> true, true));
-		this.hideAllHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_all_hold", InputConstants.UNKNOWN.getValue(), category));
-		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.hide_players_near", InputConstants.KEY_G, category, () -> true, true));
-		this.hideNearHoldKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_near_hold", InputConstants.UNKNOWN.getValue(), category));
+		this.hideAllKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_all", InputConstants.KEY_H, category));
+		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_near", InputConstants.KEY_G, category));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.player == null) {
@@ -60,23 +60,62 @@ public class HidePlayers implements ModInitializer {
 			}
 
 			// all player visibility
-			VisibilityManager.updateVisibilityAll(!this.hideAllKey.isDown() && !this.hideAllHoldKey.isDown());
-			if (this.hideAllKey.isDown() && !this.wasHideAllPressed) {
-				client.player.displayClientMessage(Component.translatable("dynamic_players.message.all_players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
-			} else if (!this.hideAllKey.isDown() && this.wasHideAllPressed) {
-				client.player.displayClientMessage(Component.translatable("dynamic_players.message.all_players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+			if (this.hideAllKey.isDown()) {
+				if (this.hideAllKeyTimestamp == 0) { // first press
+					this.hideAllKeyTimestamp = System.currentTimeMillis();
+					VisibilityManager.updateVisibilityAll(!VisibilityManager.visibilityAll());
+					this.notifyVisibilityAllChange(VisibilityManager.visibilityAll(), false);
+				} else if (System.currentTimeMillis() - this.hideAllKeyTimestamp >= HidePlayers.KEY_HELD_THRESHOLD) { // key held threshold
+					this.notifyVisibilityAllChange(VisibilityManager.visibilityAll(), true);
+				}
+			} else if (this.hideAllKeyTimestamp > 0) { // unpress
+				if (System.currentTimeMillis() - this.hideAllKeyTimestamp > HidePlayers.KEY_HELD_THRESHOLD) {
+					VisibilityManager.updateVisibilityAll(!VisibilityManager.visibilityAll());
+					this.notifyVisibilityAllChange(VisibilityManager.visibilityAll(), false);
+				}
+				this.hideAllKeyTimestamp = 0;
 			}
 
 			// near player visibility
-			VisibilityManager.updateVisibilityNear(!this.hideNearKey.isDown() && !this.hideNearHoldKey.isDown());
-			if (this.hideNearKey.isDown() && !this.wasHideNearPressed) {
-				client.player.displayClientMessage(Component.translatable("dynamic_players.message.near_players_hidden").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
-			} else if (!this.hideNearKey.isDown() && this.wasHideNearPressed) {
-				client.player.displayClientMessage(Component.translatable("dynamic_players.message.near_players_shown").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+			if (this.hideNearKey.isDown()) {
+				if (this.hideNearKeyTimestamp == 0) { // first press
+					this.hideNearKeyTimestamp = System.currentTimeMillis();
+					VisibilityManager.updateVisibilityNear(!VisibilityManager.visibilityNear());
+					this.notifyVisibilityNearChange(VisibilityManager.visibilityNear(), false);
+				} else if (System.currentTimeMillis() - this.hideNearKeyTimestamp >= HidePlayers.KEY_HELD_THRESHOLD) { // key held threshold
+					this.notifyVisibilityNearChange(VisibilityManager.visibilityNear(), true);
+				}
+			} else if (this.hideNearKeyTimestamp > 0) { // unpress
+				if (System.currentTimeMillis() - this.hideNearKeyTimestamp > HidePlayers.KEY_HELD_THRESHOLD) {
+					VisibilityManager.updateVisibilityNear(!VisibilityManager.visibilityAll());
+					this.notifyVisibilityNearChange(VisibilityManager.visibilityNear(), false);
+				}
+				this.hideNearKeyTimestamp = 0;
 			}
-
-			this.wasHideAllPressed = this.hideAllKey.isDown();
-			this.wasHideNearPressed = this.hideNearKey.isDown();
 		});
+	}
+
+	private void notifyVisibilityAllChange(boolean visibility, boolean keyHeld) {
+		LocalPlayer player = Minecraft.getInstance().player;
+		String key;
+		if (visibility) {
+			key = !keyHeld ? "dynamic_players.message.all_players_shown" : "dynamic_players.message.all_players_shown_held";
+			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+		} else {
+			key = !keyHeld ? "dynamic_players.message.all_players_hidden" : "dynamic_players.message.all_players_hidden_held";
+			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+		}
+	}
+
+	private void notifyVisibilityNearChange(boolean visibility, boolean keyHeld) {
+		LocalPlayer player = Minecraft.getInstance().player;
+		String key;
+		if (visibility) {
+			key = !keyHeld ? "dynamic_players.message.near_players_shown" : "dynamic_players.message.near_players_shown_held";
+			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+		} else {
+			key = !keyHeld ? "dynamic_players.message.near_players_hidden" : "dynamic_players.message.near_players_hidden_held";
+			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+		}
 	}
 }

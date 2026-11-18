@@ -9,9 +9,13 @@
   "dynamic_players.message.whitelist_enable": "Whitelist: Enabled",
   "dynamic_players.message.whitelist_disable": "Whitelist: Disabled",
   "dynamic_players.message.all_players_hidden": "Players: Hidden",
+  "dynamic_players.message.all_players_hidden_held": "Players: Hidden (key held)",
   "dynamic_players.message.all_players_shown": "Players: Visible",
+  "dynamic_players.message.all_players_shown_held": "Players: Visible (key held)",
   "dynamic_players.message.near_players_hidden": "Nearby Players: Hidden",
+  "dynamic_players.message.near_players_hidden_held": "Nearby Players: Hidden (key held)",
   "dynamic_players.message.near_players_shown": "Nearby Players: Visible",
+  "dynamic_players.message.near_players_shown_held": "Nearby Players: Visible (key held)",
 
   "dynamic_players.options.title": "Dynamic Players Config",
   "dynamic_players.options.category.basic": "Basic",
