@@ -11,7 +11,9 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.util.ARGB;
-import net.minecraft.world.entity.Entity;
+import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.Field;
 import java.util.AbstractMap;
@@ -29,6 +31,8 @@ public class RenderUtils {
 
     private static final Map<EntityRenderState, RemotePlayer> entityMap = new HashMap<>();
     public static final Map<RemotePlayer, Float> visibilityMap = new HashMap<>();
+
+    private static final Map<Pair<RenderType, RenderOverride>, RenderType> renderTypeCache = new PassiveExpiringMap<>(new PaddedTimeToLiveExpirationPolicy<>(20000L, 50L), new LRUMap<>(50));
 
     public static void storeEntity(RemotePlayer entity, EntityRenderState entityRenderState) {
         RenderUtils.entityMap.put(entityRenderState, entity);
@@ -194,6 +198,10 @@ public class RenderUtils {
         if (!RenderUtils.shouldRenderTranslucent(false)) {
             return renderType;
         }
+        RenderType cachedResult = RenderUtils.renderTypeCache.get(Pair.of(renderType, RenderUtils.getRenderOverride()));
+        if (cachedResult != null) {
+            return cachedResult;
+        }
         String name;
         RenderSetup renderSetup;
         try {
@@ -208,7 +216,9 @@ public class RenderUtils {
             throw new RuntimeException(e);
         }
         RenderSetup newRenderSetup = RenderUtils.modifyRenderSetup(renderSetup, RenderUtils.getRenderOverride());
-        return RenderType.create(HidePlayers.MOD_ID + "$" + name, newRenderSetup);
+        RenderType newRenderType = RenderType.create(HidePlayers.MOD_ID + "$" + name, newRenderSetup);
+        RenderUtils.renderTypeCache.put(Pair.of(renderType, RenderUtils.getRenderOverride()), newRenderType);
+        return newRenderType;
     }
 
     private static RenderSetup modifyRenderSetup(RenderSetup oldRenderSetup, RenderOverride renderOverride) {
@@ -282,5 +292,27 @@ public class RenderUtils {
             builder.withCull(oldPipeline.isCull());
         }
         return builder.build();
+    }
+
+    private static class PaddedTimeToLiveExpirationPolicy<K, V> implements PassiveExpiringMap.ExpirationPolicy<K, V> {
+        private final long baseTimeToLive;
+        private final long padding;
+
+        private long lastExpirationTime;
+
+        private PaddedTimeToLiveExpirationPolicy(long baseTimeToLive, long padding) {
+            this.baseTimeToLive = baseTimeToLive;
+            this.padding = padding;
+        }
+
+        @Override
+        public long expirationTime(K key, V value) {
+            long expirationTime = System.currentTimeMillis() + baseTimeToLive;
+            if (expirationTime - lastExpirationTime < padding) {
+                expirationTime = lastExpirationTime + padding;
+            }
+            lastExpirationTime = expirationTime;
+            return expirationTime;
+        }
     }
 }
