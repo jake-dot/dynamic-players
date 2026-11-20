@@ -47,12 +47,8 @@ public class VisibilityManager {
         return VisibilityManager.translucentNear;
     }
 
-    public static boolean updateWhitelistState(boolean whitelistEnabled) {
-        if (VisibilityManager.whitelistEnabled == whitelistEnabled) {
-            return false;
-        }
-        VisibilityManager.whitelistEnabled = whitelistEnabled;
-        return true;
+    public static void toggleWhitelist() {
+        VisibilityManager.whitelistEnabled = !VisibilityManager.whitelistEnabled;
     }
 
     public static void toggleVisibilityAll() {

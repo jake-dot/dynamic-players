@@ -41,7 +41,7 @@ public class HidePlayers implements ModInitializer {
 		HidePlayers.config = Config.load();
 
 		KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "dynamic_players"));
-		this.whitelistKey = KeyBindingHelper.registerKeyBinding(new ToggleKeyMapping("key.dynamic_players.toggle_whitelist", InputConstants.KEY_V, category, () -> true, true));
+		this.whitelistKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.toggle_whitelist", InputConstants.KEY_V, category));
 		this.hideAllKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_all", InputConstants.KEY_H, category));
 		this.hideNearKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.dynamic_players.hide_players_near", InputConstants.KEY_G, category));
 
@@ -51,7 +51,8 @@ public class HidePlayers implements ModInitializer {
 			}
 
 			// whitelist
-			if (VisibilityManager.updateWhitelistState(!this.whitelistKey.isDown())) {
+			if (whitelistKey.consumeClick()) {
+				VisibilityManager.toggleWhitelist();
 				if (VisibilityManager.whitelistEnabled()) {
 					client.player.displayClientMessage(Component.translatable("dynamic_players.message.whitelist_enable").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
 				} else {
