@@ -164,7 +164,7 @@ public class RenderUtils {
     }
 
     public static boolean shouldRenderTranslucent(boolean ignoreOverride) {
-        if (RenderUtils.targetOpacity == 1.0F || RenderUtils.targetOpacity == 0.0F) {
+        if (Minecraft.getInstance().level == null || RenderUtils.targetOpacity == 1.0F || RenderUtils.targetOpacity == 0.0F) {
             return false;
         }
         return ignoreOverride || RenderUtils.renderOverride != RenderOverride.NONE;
