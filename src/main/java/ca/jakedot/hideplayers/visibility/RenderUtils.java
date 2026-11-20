@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.util.ARGB;
-import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -32,7 +31,7 @@ public class RenderUtils {
     private static final Map<EntityRenderState, RemotePlayer> entityMap = new HashMap<>();
     public static final Map<RemotePlayer, Float> visibilityMap = new HashMap<>();
 
-    private static final Map<Pair<RenderType, RenderOverride>, RenderType> renderTypeCache = new PassiveExpiringMap<>(new PaddedTimeToLiveExpirationPolicy<>(20000L, 50L), new LRUMap<>(50));
+    private static final Map<Pair<RenderType, RenderOverride>, RenderType> renderTypeCache = new PassiveExpiringMap<>(new PaddedTimeToLiveExpirationPolicy<>(20000L, 50L));
 
     public static void storeEntity(RemotePlayer entity, EntityRenderState entityRenderState) {
         RenderUtils.entityMap.put(entityRenderState, entity);
