@@ -3,11 +3,9 @@ package ca.jakedot.hideplayers.visibility;
 import ca.jakedot.hideplayers.HidePlayers;
 import ca.jakedot.hideplayers.PlayerGroup;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 public class VisibilityManager {
@@ -16,6 +14,8 @@ public class VisibilityManager {
     private static boolean whitelistEnabled = true;
     private static boolean visibilityAll = true;
     private static boolean visibilityNear = true;
+    private static boolean translucentAll;
+    private static boolean translucentNear;
 
     public static void updateWhitelist(List<PlayerGroup> whitelistGroups) {
         VisibilityManager.whitelist.clear();
@@ -39,6 +39,14 @@ public class VisibilityManager {
         return VisibilityManager.visibilityNear;
     }
 
+    public static boolean translucentAll() {
+        return VisibilityManager.translucentAll;
+    }
+
+    public static boolean translucentNear() {
+        return VisibilityManager.translucentNear;
+    }
+
     public static boolean updateWhitelistState(boolean whitelistEnabled) {
         if (VisibilityManager.whitelistEnabled == whitelistEnabled) {
             return false;
@@ -47,31 +55,64 @@ public class VisibilityManager {
         return true;
     }
 
-    public static void updateVisibilityAll(boolean visibility) {
-        if (VisibilityManager.visibilityAll == visibility) {
-            return;
-        }
-        VisibilityManager.visibilityAll = visibility;
-        long transitionTime = HidePlayers.getConfig().transitionTime();
-        if (transitionTime > 0) {
-            if (VisibilityManager.globalVisibilityTransition == null) {
-                VisibilityManager.globalVisibilityTransition = new VisibilityTransition(transitionTime, !visibility);
-            } else {
-                VisibilityManager.globalVisibilityTransition = VisibilityManager.globalVisibilityTransition.reverse(); // TODO make this adapt to different durations
+    public static void toggleVisibilityAll() {
+        VisibilityManager.visibilityAll = !VisibilityManager.visibilityAll;
+
+        if (HidePlayers.getConfig().transitionTime() > 0) {
+            float startOpacity = VisibilityManager.visibilityAll ? 0.0F : 1.0F;
+            float endOpacity = VisibilityManager.visibilityAll ? 1.0F : 0.0F;
+            VisibilityTransition transition = new VisibilityTransition(HidePlayers.getConfig().transitionTime(), startOpacity, endOpacity);
+            if (VisibilityManager.globalVisibilityTransition != null) {
+                transition = transition.trim(VisibilityManager.globalVisibilityTransition.getOpacity());
             }
+            VisibilityManager.globalVisibilityTransition = transition;
         } else {
             VisibilityManager.globalVisibilityTransition = null;
         }
     }
 
-    public static boolean updateVisibilityNear(boolean visibility) {
-        if (VisibilityManager.visibilityNear == visibility) {
-            return false;
-        }
-        VisibilityManager.visibilityNear = visibility;
+    public static void toggleVisibilityNear() {
+        VisibilityManager.visibilityNear = !VisibilityManager.visibilityNear;
 
-        VisibilityManager.nearVisibilityTransition = new VisibilityTransition(150L, !visibility);
-        return true;
+        float startOpacity = VisibilityManager.visibilityNear ? 0.0F : 1.0F;
+        float endOpacity = VisibilityManager.visibilityNear ? 1.0F : 0.0F;
+        VisibilityTransition transition = new VisibilityTransition(150L, startOpacity, endOpacity);
+        if (VisibilityManager.nearVisibilityTransition != null) {
+            transition = transition.trim(VisibilityManager.nearVisibilityTransition.getOpacity());
+        }
+        VisibilityManager.nearVisibilityTransition = transition;
+    }
+
+    public static void toggleTranslucentAll() {
+        VisibilityManager.translucentAll = !VisibilityManager.translucentAll;
+
+        if (HidePlayers.getConfig().transitionTime() > 0) {
+            float translucentOpacity = (float) HidePlayers.getConfig().allPlayersHiddenOpacity();
+            float regularOpacity = VisibilityManager.visibilityAll ? 1.0F : 0.0F;
+            float startOpacity = VisibilityManager.translucentAll ? regularOpacity : translucentOpacity;
+            float endOpacity = VisibilityManager.translucentAll ? translucentOpacity : regularOpacity;
+            VisibilityTransition transition = new VisibilityTransition(HidePlayers.getConfig().transitionTime(), startOpacity, endOpacity);
+            if (VisibilityManager.globalVisibilityTransition != null) {
+                transition = transition.trim(VisibilityManager.globalVisibilityTransition.getOpacity());
+            }
+            VisibilityManager.globalVisibilityTransition = transition;
+        } else {
+            VisibilityManager.globalVisibilityTransition = null;
+        }
+    }
+
+    public static void toggleTranslucentNear() {
+        VisibilityManager.translucentNear = !VisibilityManager.translucentNear;
+
+        float translucentOpacity = (float) HidePlayers.getConfig().nearbyPlayersHiddenOpacity();
+        float regularOpacity = VisibilityManager.visibilityNear ? 1.0F : 0.0F;
+        float startOpacity = VisibilityManager.translucentNear ? regularOpacity : translucentOpacity;
+        float endOpacity = VisibilityManager.translucentNear ? translucentOpacity : regularOpacity;
+        VisibilityTransition transition = new VisibilityTransition(150L, startOpacity, endOpacity);
+        if (VisibilityManager.nearVisibilityTransition != null) {
+            transition = transition.trim(VisibilityManager.nearVisibilityTransition.getOpacity());
+        }
+        VisibilityManager.nearVisibilityTransition = transition;
     }
 
     public static boolean isWhitelisted(String player) {
@@ -81,10 +122,14 @@ public class VisibilityManager {
 
     private static VisibilityTransition globalVisibilityTransition;
     private static VisibilityTransition nearVisibilityTransition;
-    private final static Map<String, VisibilityTransition> visibilityTransitionMap = new HashMap<>();
 
-    public static VisibilityTransition getTransition(String player) {
-        return VisibilityManager.visibilityTransitionMap.getOrDefault(player, VisibilityManager.globalVisibilityTransition);
+
+    public static VisibilityTransition getGlobalTransition() {
+        return VisibilityManager.globalVisibilityTransition;
+    }
+
+    public static VisibilityTransition getNearTransition() {
+        return VisibilityManager.nearVisibilityTransition;
     }
 
     public static void pruneTransitions() {
@@ -93,11 +138,6 @@ public class VisibilityManager {
         }
         if (VisibilityManager.nearVisibilityTransition != null && VisibilityManager.nearVisibilityTransition.isComplete()) {
             VisibilityManager.nearVisibilityTransition = null;
-        }
-        for (Map.Entry<String, VisibilityTransition> entry : VisibilityManager.visibilityTransitionMap.entrySet()) {
-            if (entry.getValue().isComplete()) {
-                VisibilityManager.visibilityTransitionMap.remove(entry.getKey());
-            }
         }
     }
 }

@@ -49,6 +49,12 @@ public class ModMenuIntegration implements ModMenuApi {
                 .setDefaultValue(defaultConfig::nearbyPlayersDistance)
                 .build());
 
+        basicCategory.addEntry(entryBuilder.startBooleanToggle(Component.translatable("dynamic_players.options.toggle_translucency"), config.toggleTranslucency())
+                .setYesNoTextSupplier(value -> Component.translatable("dynamic_players.options.toggle_translucency_" + value))
+                .setSaveConsumer(config::setToggleTranslucency)
+                .setDefaultValue(defaultConfig::toggleTranslucency)
+                .build());
+
         ConfigCategory advancedCategory = builder.getOrCreateCategory(Component.translatable("dynamic_players.options.category.advanced"));
 
         advancedCategory.addEntry(entryBuilder.startIntSlider(Component.translatable("dynamic_players.options.hidden_players_opacity"), (int) (config.allPlayersHiddenOpacity() * 100), 0, 100)

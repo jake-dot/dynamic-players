@@ -41,6 +41,7 @@ public class Config {
     private List<PlayerGroup> whitelistGroups = List.of(PlayerGroup.createDefaultGroup(1));
     private long transitionTime = 150L;
     private double nearbyPlayersDistance = 4.0;
+    private boolean toggleTranslucency = false;
     private double nearbyPlayersHiddenOpacity = 0.35;
     private double allPlayersHiddenOpacity = 0.35;
     private boolean reverseRenderingOrder = false;
@@ -55,6 +56,10 @@ public class Config {
 
     public double nearbyPlayersDistance() {
         return this.nearbyPlayersDistance;
+    }
+
+    public boolean toggleTranslucency() {
+        return this.toggleTranslucency;
     }
 
     public double allPlayersHiddenOpacity() {
@@ -79,6 +84,10 @@ public class Config {
 
     public void setNearbyPlayersDistance(double nearbyPlayersDistance) {
         this.nearbyPlayersDistance = nearbyPlayersDistance;
+    }
+
+    public void setToggleTranslucency(boolean toggleTranslucency) {
+        this.toggleTranslucency = toggleTranslucency;
     }
 
     public void setAllPlayersHiddenOpacity(double allPlayersHiddenOpacity) {

@@ -1,18 +1,20 @@
 package ca.jakedot.hideplayers.visibility;
 
 public class VisibilityTransition {
+    private final long transitionStart;
     private final long duration;
-    private final long start;
-    private final boolean startVisible;
+    private final float startOpacity;
+    private final float endOpacity;
 
-    public VisibilityTransition(long duration, boolean startVisible) {
-        this(duration, System.currentTimeMillis(), startVisible);
+    public VisibilityTransition(long duration, float startOpacity, float endOpacity) {
+        this.transitionStart = System.currentTimeMillis();
+        this.duration = duration;
+        this.startOpacity = startOpacity;
+        this.endOpacity = endOpacity;
     }
 
-    public VisibilityTransition(long duration, long start, boolean startVisible) {
-        this.duration = duration;
-        this.start = start;
-        this.startVisible = startVisible;
+    public float getMinOpacity() {
+        return Math.min(this.startOpacity, this.endOpacity);
     }
 
     public boolean isComplete() {
@@ -20,21 +22,16 @@ public class VisibilityTransition {
     }
 
     public float getOpacity() {
-        float rawOpacity = this.startVisible ? 1.0F - this.getProgress() : this.getProgress();
-        if (rawOpacity == 0.0F || rawOpacity == 1.0F) {
-            return rawOpacity;
-        }
-        return 0.05F + rawOpacity * 0.9F;
+        float diff = this.endOpacity - this.startOpacity;
+        return this.startOpacity + diff * this.getProgress();
     }
 
-    public VisibilityTransition reverse() {
-        long remaining = this.duration - this.getTimeElapsed();
-        long inverseStart = System.currentTimeMillis() - remaining;
-        return new VisibilityTransition(duration, inverseStart, !this.startVisible);
+    public VisibilityTransition trim(float opacity) {
+        return new VisibilityTransition(this.duration - (long) (this.duration * Math.abs(opacity - this.startOpacity)), opacity, this.endOpacity);
     }
 
     private long getTimeElapsed() {
-        return System.currentTimeMillis() - this.start;
+        return System.currentTimeMillis() - this.transitionStart;
     }
 
     private float getProgress() {

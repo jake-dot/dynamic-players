@@ -61,61 +61,87 @@ public class HidePlayers implements ModInitializer {
 
 			// all player visibility
 			if (this.hideAllKey.isDown()) {
-				if (this.hideAllKeyTimestamp == 0) { // first press
-					this.hideAllKeyTimestamp = System.currentTimeMillis();
-					VisibilityManager.updateVisibilityAll(!VisibilityManager.visibilityAll());
-					this.notifyVisibilityAllChange(VisibilityManager.visibilityAll(), false);
-				} else if (System.currentTimeMillis() - this.hideAllKeyTimestamp >= HidePlayers.KEY_HELD_THRESHOLD) { // key held threshold
-					this.notifyVisibilityAllChange(VisibilityManager.visibilityAll(), true);
+				if (this.hideAllKeyTimestamp != -1) {
+					if (this.hideAllKeyTimestamp == 0) { // first press
+						this.hideAllKeyTimestamp = System.currentTimeMillis();
+					} else if (System.currentTimeMillis() - this.hideAllKeyTimestamp < HidePlayers.KEY_HELD_THRESHOLD) {
+						// TODO start the transition when it is safe
+					} else { // key held threshold
+						this.hideAllKeyTimestamp = -1;
+						VisibilityManager.toggleTranslucentAll();
+						this.notifyVisibilityAllChange();
+					}
 				}
-			} else if (this.hideAllKeyTimestamp > 0) { // unpress
-				if (System.currentTimeMillis() - this.hideAllKeyTimestamp > HidePlayers.KEY_HELD_THRESHOLD) {
-					VisibilityManager.updateVisibilityAll(!VisibilityManager.visibilityAll());
-					this.notifyVisibilityAllChange(VisibilityManager.visibilityAll(), false);
+			} else if (this.hideAllKeyTimestamp != 0) { // unpress
+				if ((this.hideAllKeyTimestamp == -1 && !HidePlayers.config.toggleTranslucency()) || System.currentTimeMillis() - this.hideAllKeyTimestamp < HidePlayers.KEY_HELD_THRESHOLD) {
+					if (VisibilityManager.translucentAll()) {
+						VisibilityManager.toggleTranslucentAll();
+					} else {
+						VisibilityManager.toggleVisibilityAll();
+					}
+					this.notifyVisibilityAllChange();
 				}
 				this.hideAllKeyTimestamp = 0;
 			}
 
 			// near player visibility
 			if (this.hideNearKey.isDown()) {
-				if (this.hideNearKeyTimestamp == 0) { // first press
-					this.hideNearKeyTimestamp = System.currentTimeMillis();
-					VisibilityManager.updateVisibilityNear(!VisibilityManager.visibilityNear());
-					this.notifyVisibilityNearChange(VisibilityManager.visibilityNear(), false);
-				} else if (System.currentTimeMillis() - this.hideNearKeyTimestamp >= HidePlayers.KEY_HELD_THRESHOLD) { // key held threshold
-					this.notifyVisibilityNearChange(VisibilityManager.visibilityNear(), true);
+				if (this.hideNearKeyTimestamp != -1) {
+					if (this.hideNearKeyTimestamp == 0) { // first press
+						this.hideNearKeyTimestamp = System.currentTimeMillis();
+					} else if (System.currentTimeMillis() - this.hideNearKeyTimestamp < HidePlayers.KEY_HELD_THRESHOLD) {
+						// TODO start the transition when it is safe
+					} else { // key held threshold
+						this.hideNearKeyTimestamp = -1;
+						VisibilityManager.toggleTranslucentNear();
+						this.notifyVisibilityNearChange();
+					}
 				}
-			} else if (this.hideNearKeyTimestamp > 0) { // unpress
-				if (System.currentTimeMillis() - this.hideNearKeyTimestamp > HidePlayers.KEY_HELD_THRESHOLD) {
-					VisibilityManager.updateVisibilityNear(!VisibilityManager.visibilityAll());
-					this.notifyVisibilityNearChange(VisibilityManager.visibilityNear(), false);
+			} else if (this.hideNearKeyTimestamp != 0) { // unpress
+				if ((this.hideNearKeyTimestamp == -1 && !HidePlayers.config.toggleTranslucency()) || System.currentTimeMillis() - this.hideNearKeyTimestamp < HidePlayers.KEY_HELD_THRESHOLD) {
+					if (VisibilityManager.translucentNear()) {
+						VisibilityManager.toggleTranslucentNear();
+					} else {
+						VisibilityManager.toggleVisibilityNear();
+					}
+					this.notifyVisibilityNearChange();
 				}
 				this.hideNearKeyTimestamp = 0;
 			}
 		});
 	}
 
-	private void notifyVisibilityAllChange(boolean visibility, boolean keyHeld) {
+	private void notifyVisibilityAllChange() {
 		LocalPlayer player = Minecraft.getInstance().player;
 		String key;
-		if (visibility) {
-			key = !keyHeld ? "dynamic_players.message.all_players_shown" : "dynamic_players.message.all_players_shown_held";
-			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+		ChatFormatting formatting;
+		if (VisibilityManager.translucentAll()) {
+			key = "dynamic_players.message.all_players_translucent";
+			formatting = ChatFormatting.AQUA;
+		} else if (VisibilityManager.visibilityAll()) {
+			key = "dynamic_players.message.all_players_shown";
+			formatting = ChatFormatting.GREEN;
 		} else {
-			key = !keyHeld ? "dynamic_players.message.all_players_hidden" : "dynamic_players.message.all_players_hidden_held";
-			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+			key = "dynamic_players.message.all_players_hidden";
+			formatting = ChatFormatting.RED;
 		}
+		player.displayClientMessage(Component.translatable(key).withStyle(formatting, ChatFormatting.BOLD), true);
 	}
 
-	private void notifyVisibilityNearChange(boolean visibility, boolean keyHeld) {
+	private void notifyVisibilityNearChange() {
 		LocalPlayer player = Minecraft.getInstance().player;
 		String key;
-		if (visibility) {
-			key = !keyHeld ? "dynamic_players.message.near_players_shown" : "dynamic_players.message.near_players_shown_held";
-			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD), true);
+		ChatFormatting formatting;
+		if (VisibilityManager.translucentNear()) {
+			key = "dynamic_players.message.near_players_translucent";
+			formatting = ChatFormatting.AQUA;
+		} else if (VisibilityManager.visibilityNear()) {
+			key = "dynamic_players.message.near_players_shown";
+			formatting = ChatFormatting.GREEN;
 		} else {
-			key = !keyHeld ? "dynamic_players.message.near_players_hidden" : "dynamic_players.message.near_players_hidden_held";
-			player.displayClientMessage(Component.translatable(key).withStyle(ChatFormatting.RED, ChatFormatting.BOLD), true);
+			key = "dynamic_players.message.near_players_hidden";
+			formatting = ChatFormatting.RED;
 		}
+		player.displayClientMessage(Component.translatable(key).withStyle(formatting, ChatFormatting.BOLD), true);
 	}
 }

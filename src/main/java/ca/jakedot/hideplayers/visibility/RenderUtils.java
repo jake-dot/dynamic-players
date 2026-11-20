@@ -81,34 +81,39 @@ public class RenderUtils {
         }
 
         if (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled()) {
-            float minOpacity = (float) HidePlayers.getConfig().allPlayersHiddenOpacity();
-            VisibilityTransition transition = VisibilityManager.getTransition(identifier);
+            VisibilityTransition transition = VisibilityManager.getGlobalTransition();
             if (transition != null) {
-                float rawOpacity = transition.getOpacity();
-                targetOpacity = minOpacity + rawOpacity * (1.0F - minOpacity);
+                targetOpacity = transition.getOpacity();
+            } else if (VisibilityManager.translucentAll()) {
+                targetOpacity = (float) HidePlayers.getConfig().allPlayersHiddenOpacity();
             } else if (!VisibilityManager.visibilityAll()) {
-                targetOpacity = minOpacity;
+                targetOpacity = 0.0F;
             }
         }
         if (targetOpacity == 0.0F) {
             return targetOpacity;
         }
 
-        if (!VisibilityManager.visibilityNear() && (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled())) {
+        if ((!VisibilityManager.visibilityNear() || VisibilityManager.getNearTransition() != null || VisibilityManager.translucentNear()) && (!VisibilityManager.isWhitelisted(identifier) || !VisibilityManager.whitelistEnabled())) {
             AbstractClientPlayer self = Minecraft.getInstance().player;
             float threshold = (float) HidePlayers.getConfig().nearbyPlayersDistance(); // TODO option to auto adjust to player scale
             float transitionRange = 1.0F;
             if (distSqr <= Math.pow(threshold, 2)) {
                 float dist = self.distanceTo(entity);
-                float minOpacity = (float) HidePlayers.getConfig().nearbyPlayersHiddenOpacity();
+                VisibilityTransition transition = VisibilityManager.getNearTransition();
+                float minOpacity = transition != null ? transition.getMinOpacity() : VisibilityManager.translucentNear() ? (float) HidePlayers.getConfig().nearbyPlayersHiddenOpacity() : 0.0F;
+                float nearOpacity = targetOpacity;
                 if (dist <= threshold - transitionRange) {
-                    targetOpacity = Math.min(targetOpacity, minOpacity);
+                    nearOpacity = minOpacity;
                 } else if (dist < threshold) {
                     float transitionDist = dist - (threshold - transitionRange);
                     float rawOpacity = Math.clamp(transitionDist / transitionRange, 0.0F, 1.0F);
-                    float finalOpacity = minOpacity + rawOpacity * (1.0F - minOpacity);
-                    targetOpacity = Math.min(targetOpacity, finalOpacity);
+                    nearOpacity = minOpacity + rawOpacity * (1.0F - minOpacity);
                 }
+                if (transition != null) {
+                    nearOpacity = Math.max(transition.getOpacity(), nearOpacity);
+                }
+                targetOpacity = Math.min(targetOpacity, nearOpacity);
             }
         }
 
